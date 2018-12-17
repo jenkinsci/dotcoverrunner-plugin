@@ -8,7 +8,7 @@ public class DotCoverRunner extends Plugin {
 
     public DotCoverRunner()
     {
-        
+
     }
 
     private static final Logger log = Logger.getLogger(DotCoverRunner.class.getName());
