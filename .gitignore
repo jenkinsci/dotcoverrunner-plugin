@@ -1,0 +1,6 @@
+.env
+*.env
+secrets/
+target/
+work/
+.idea/
