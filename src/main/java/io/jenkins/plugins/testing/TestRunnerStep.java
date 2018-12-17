@@ -1,14 +1,34 @@
 package io.jenkins.plugins.testing;
 
-import org.jenkinsci.plugins.workflow.steps.Step;
-import org.jenkinsci.plugins.workflow.steps.StepContext;
-import org.jenkinsci.plugins.workflow.steps.StepExecution;
-import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
+import hudson.Extension;
+import hudson.model.TaskListener;
+import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.PrintStream;
+import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class TestRunnerStep extends Step {
+
+    @Extension
+    public static class Desc extends StepDescriptor
+    {
+
+        @Override
+        public Set<? extends Class<?>> getRequiredContext() {
+           return Collections.unmodifiableSet(Collections.singleton(TaskListener.class));
+        }
+
+        /** Returns the DSL method name used by jenkins.
+         * @return
+         */
+        @Override
+        public String getFunctionName() {
+            return "testRunner";
+        }
+    }
 
 
     private static final Logger LOGGER = Logger.getLogger(TestRunnerStep.class.getName());
@@ -42,12 +62,14 @@ public class TestRunnerStep extends Step {
         {
             super(context);
             this.testPlatform = testPlatform;
-            LOGGER.info("Execution constructed");
+
         }
 
         @Override
         protected Object run() throws Exception {
-            LOGGER.info("TestRunner running with args " + testPlatform);
+            TaskListener listener = getContext().get(TaskListener.class);
+            PrintStream logger = listener.getLogger();
+            logger.println("TestRunner running with testPlatform=" + testPlatform);
             return null;
         }
     }
