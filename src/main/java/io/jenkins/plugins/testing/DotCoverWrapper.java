@@ -8,18 +8,16 @@ import java.util.function.Consumer;
 
 public class DotCoverWrapper {
 
-    private final Path dotCoverPath;
     private final static String DOTCOVER_EXE_NAME = "dotcover.exe";
+    private final Path dotCoverPath;
     private final File dotCoverInstallDir;
 
-    public DotCoverWrapper(String installDir)
-    {
+    public DotCoverWrapper(String installDir) {
         dotCoverInstallDir = new File(installDir);
         dotCoverPath = Paths.get(dotCoverInstallDir.getAbsolutePath(), DOTCOVER_EXE_NAME);
     }
 
-    public void execute() throws IOException, InterruptedException
-    {
+    public void execute() throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder();
         builder.directory(dotCoverInstallDir);
         builder.command(dotCoverPath.toString());
