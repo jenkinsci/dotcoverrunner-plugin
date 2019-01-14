@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry field="testPlatform" title="Platform to target">
+      <select name="testPlatform">
+             <option value="x86">x86</option>
+             <option value="x64">x64</option>
+      </select>
+    </f:entry>
+
+    <f:entry field="pathToDotCover" title="Path to DotCover tool">
+          <f:textbox/>
+    </f:entry>
+</j:jelly>

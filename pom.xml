@@ -2,8 +2,8 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <name>TODO Plugin</name>
-    <description>TODO</description>
+    <name>DotCover Runner</name>
+    <description>DotCover Runner</description>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -31,6 +31,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <dependencies>
+
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-step-api</artifactId>
@@ -88,7 +89,6 @@
         </dependency>
 
     </dependencies>
-
 
     <!-- Assuming you want to host on @jenkinsci:
     <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>
