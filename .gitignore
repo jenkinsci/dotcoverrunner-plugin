@@ -5,6 +5,7 @@ secrets/
 
 # IntelliJ IDEA files
 .idea/
+*.iml
 
 # Maven-specific
 target/
