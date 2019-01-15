@@ -25,6 +25,7 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 public class DotCoverInstallation extends ToolInstallation implements NodeSpecific<DotCoverInstallation> {
 
     public static final String DOTCOVERTOOL_DEFAULT_NAME = "Default";
+    public static final String WINDOWS_BINARY_NAME="dotcover.exe";
 
     /**
      * Default constructor invoked by jenkins.
@@ -69,7 +70,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         return new DotCoverInstallation(getName(), home, Collections.emptyList());
     }
 
-    public DotCoverInstallation getDefaultInstallation() {
+    public static DotCoverInstallation getDefaultInstallation() {
         DotCoverInstallation defaultInstallation;
         DescriptorImpl descriptor = Jenkins.get().getDescriptorByType(DescriptorImpl.class);
         defaultInstallation = descriptor.findInstallationByName(DOTCOVERTOOL_DEFAULT_NAME);
@@ -99,12 +100,11 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
 
         @SuppressWarnings("SuspiciousToArrayCall")
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest req, JSONObject json) {
             setInstallations(req.bindJSONToList(clazz, json.get("tool")).toArray(new DotCoverInstallation[0]));
             save();
             return true;
         }
-
 
         @Nonnull
         @Override
