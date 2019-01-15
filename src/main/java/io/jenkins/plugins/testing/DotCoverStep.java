@@ -148,6 +148,7 @@ public class DotCoverStep extends Step {
             final FilePath dotCoverConfigPath = tmpDirectory.child("DotCoverConfig.xml");
             String home = vsTest.getHome();
 
+
             Document document = DocumentHelper.createDocument();
 
             Element analyseParams = document.addElement("AnalyseParams");
@@ -159,14 +160,14 @@ public class DotCoverStep extends Step {
             targetArguments.addText(vsTestArgs);
 
             Element targetWorkingDir = analyseParams.addElement("TargetWorkingDir");
-            String workingDir = workspace.child(solutionDir).absolutize().toURI().toString();
+            String workingDir = new File (workspace.child(solutionDir).absolutize().toURI()).toString();
             targetWorkingDir.addText(workingDir);
 
             Element tempDir = analyseParams.addElement("TempDir");
-            tempDir.addText(tmpDirectory.absolutize().toURI().toString());
+            tempDir.addText(new File(tmpDirectory.absolutize().toURI()).toString());
 
             Element output = analyseParams.addElement("Output");
-            output.addText(tmpDirectory.child("Snapshot.cov").toURI().toString());
+            output.addText(new File(tmpDirectory.child("Snapshot.cov").toURI()).toString());
 
             Element filters = analyseParams.addElement("Filters");
 
@@ -176,8 +177,8 @@ public class DotCoverStep extends Step {
 
             Element processFilters = filters.addElement("ProcessFilters");
 
-            processFilter(processFilters.addElement("IncludeFilters"), processInclude); // todo
-            processFilter(processFilters.addElement("ExcludeFilters"), processExclude); // todo
+            processFilter(processFilters.addElement("IncludeFilters"), processInclude);
+            processFilter(processFilters.addElement("ExcludeFilters"), processExclude);
 
             if (isSet(coverageInclude))
             {
