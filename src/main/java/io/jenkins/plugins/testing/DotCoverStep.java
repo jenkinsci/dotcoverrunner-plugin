@@ -1,15 +1,17 @@
 package io.jenkins.plugins.testing;
 
 import com.google.common.base.Strings;
+import com.sun.mail.iap.Argument;
+import com.sun.org.apache.xpath.internal.Arg;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Proc;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 import jenkins.model.Jenkins;
+import jline.console.completer.ArgumentCompleter;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -23,9 +25,10 @@ import org.kohsuke.stapler.DataBoundSetter;
 import javax.annotation.Nonnull;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,11 +41,12 @@ public class DotCoverStep extends Step {
 
     private static final String APP_NAME = "dotcover";
     private static final String dotCoverMandatoryExcludeFromCoverage = "*.Core;*.DongleSystem;*.FocusScanShared;*Test*;FluentAssertions;SlimDX;MathNet.Numerics";
-
+    private static final String DEFAULT_TEST_ASSEMBLIES_GLOB="\\**\\*Test\\bin\\**\\Release\\*Test.dll";
 
     private String testPlatform;
     private String testCaseFilter;
     private String pathToDotCover;
+    private String testAssemblyFilter;
 
     @DataBoundConstructor
     public DotCoverStep(String testCaseFilter) {
@@ -55,6 +59,18 @@ public class DotCoverStep extends Step {
 
     public String getTestPlatform() {
         return testPlatform;
+    }
+
+    @DataBoundSetter
+    public void setTestAssemblyFilter(String testAssemblyFilter)
+    {
+        this.testAssemblyFilter = testAssemblyFilter;
+    }
+
+    @SuppressWarnings("unused") // Used by Stapler
+    public String getTestAssemblyFilter()
+    {
+        return testAssemblyFilter;
     }
 
     @DataBoundSetter
@@ -73,7 +89,7 @@ public class DotCoverStep extends Step {
 
     @Override
     public StepExecution start(StepContext stepContext) {
-        return new Execution(stepContext, testPlatform, pathToDotCover);
+        return new Execution(stepContext, testPlatform, pathToDotCover, testAssemblyFilter, testCaseFilter);
     }
 
     @Extension
@@ -100,12 +116,21 @@ public class DotCoverStep extends Step {
         private String testPlatform;
         private String dotCoverPath;
         private TaskListener listener;
+        private String testAssemblyFilter;
+        private String testCaseFilter;
 
-        public Execution(StepContext context, String testPlatform, String dotCoverPath) {
+        public Execution(StepContext context, String testPlatform, String dotCoverPath, String testAssemblyFilter, String testCaseFilter) {
             super(context);
             this.context = context;
             this.dotCoverPath = dotCoverPath;
             this.testPlatform = testPlatform;
+
+            this.testAssemblyFilter = DEFAULT_TEST_ASSEMBLIES_GLOB;
+            if (isSet(testAssemblyFilter))
+            {
+                this.testAssemblyFilter = testAssemblyFilter;
+            }
+            this.testCaseFilter = testCaseFilter;
         }
 
         /**
@@ -121,33 +146,35 @@ public class DotCoverStep extends Step {
             return (node != null) ? node : Jenkins.get();
         }
 
-        private String getPathToDotCover()
-        {
-            String path = null;
-
-            return null;
-        }
-
-        private List<String> buildArgs()
-        {
-
-
-            List<String> args = new ArrayList<>();
-            args.add(getPathToDotCover());
-            return args;
-        }
-
-
-        private void generateDotCoverConfig(@Nonnull FilePath tmpDirectory, final String vsTestArgs, final String solutionDir, final String coverageInclude, final String coverageClassInclude, final String coverageFunctionInclude, final String coverageAssemblyExclude, final String processInclude, final String processExclude) throws ParserConfigurationException, IOException, InterruptedException, TransformerException {
-
-
+        private FilePath generateDotCoverConfig(@Nonnull FilePath tmpDirectory, final String additionalVsTestArgs, final String solutionDir, final String coverageInclude, final String coverageClassInclude, final String coverageFunctionInclude, String coverageAssemblyExclude, final String processInclude, final String processExclude, List<String> testAssemblies, String testCaseFilter) throws ParserConfigurationException, IOException, InterruptedException, TransformerException {
             final TaskListener listener = context.get(TaskListener.class);
             final FilePath workspace = context.get(FilePath.class);
             final Node node = workspaceToNode(workspace);
+
+            final String dotCoverMustExcludesFromCoverage = "*.Core;*.DongleSystem;*.FocusScanShared;*Test*;" +
+                    "FluentAssertions;SlimDX;MathNet.Numerics";
+
             final VsTestInstallation vsTest = VsTestInstallation.getDefaultInstallation().forNode(node, listener);
             final FilePath dotCoverConfigPath = tmpDirectory.child("DotCoverConfig.xml");
             String home = vsTest.getHome();
 
+            String vsTestArgs = "/platform:" + testPlatform + " ";
+            vsTestArgs += "/logger:trx ";
+
+            for (String assembly : testAssemblies)
+            {
+                vsTestArgs += assembly + " ";
+            }
+
+            if (isSet(testCaseFilter))
+            {
+                vsTestArgs+= "/testCaseFilter:" + testCaseFilter;
+            }
+
+            if (isSet(additionalVsTestArgs))
+            {
+                vsTestArgs += additionalVsTestArgs + " ";
+            }
 
             Document document = DocumentHelper.createDocument();
 
@@ -224,6 +251,16 @@ public class DotCoverStep extends Step {
 
             if (isSet(coverageAssemblyExclude))
             {
+                coverageAssemblyExclude += ";" + dotCoverMustExcludesFromCoverage;
+            }
+            else
+            {
+                coverageAssemblyExclude = dotCoverMustExcludesFromCoverage;
+            }
+
+
+            if (isSet(coverageAssemblyExclude))
+            {
                 for (String assembly: coverageAssemblyExclude.split(";"))
                 {
                     if (isSet(assembly))
@@ -234,14 +271,14 @@ public class DotCoverStep extends Step {
                 }
             }
 
-
-
             try (OutputStream out = dotCoverConfigPath.write()) {
                 OutputFormat format = OutputFormat.createPrettyPrint();
                 XMLWriter writer = new XMLWriter(out, format);
                 writer.write( document );
                 writer.close();
             }
+
+            return dotCoverConfigPath;
         }
 
         private void processFilter(Element parentElement, String input)
@@ -267,24 +304,51 @@ public class DotCoverStep extends Step {
 
             final Launcher launcher = workspace.createLauncher(listener);
 
-            final FilePath tmpDirectory = workspace.createTempDir("dotcover", "tmp");
-            generateDotCoverConfig(tmpDirectory, "vs test args", "Threeshape.Contracts", "assembly1;assembly2", "class1;class2", "somemethod", "assembly3", "sqlserver.exe;mssqlserver.exe", "test.exe;test2.exe");
+            final FilePath tmpDirectory = workspace.createTempDir("dotcover", "tmpdir");
 
-            ArgumentListBuilder args = new ArgumentListBuilder();
+            FilePath[] assemblies = workspace.list(testAssemblyFilter);
+            List<String> testAssemblies = new ArrayList<>();
 
-            args.addQuoted(dotCover.getHome());
-            args.add("cover");
-            workspace.absolutize().toURI();
-            Path p = Paths.get(workspace.absolutize().toURI());
-            Path toConfig = p.resolve("DotCoverConfig.xml").toAbsolutePath();
-            args.add(toConfig.toString());
+            for (FilePath assemblyPath : assemblies)
+            {
+                String absolutePath = new File(assemblyPath.absolutize().toURI()).toString();
+                testAssemblies.add(absolutePath);
+            }
 
-            final Proc proc  = launcher.launch().cmds(args).stdout(logger).start();
-            proc.join();
+            FilePath dotCoverConfig = generateDotCoverConfig(tmpDirectory, null, "Threeshape.Contracts", "*", "*", "*", "", "", "", testAssemblies, testCaseFilter);
+
+            runDotCover("cover", new File(dotCoverConfig.toURI()).toString());
+
+            FilePath p = tmpDirectory.child("snapshot.cov");
+            FilePath indexFile = tmpDirectory.child("index.html");
+            runDotCover( "report", "/source=" + new File(p.toURI()).toString(), "/output=" + new File(indexFile.toURI()).toString(), "/reporttype=HTML");
 
             return null;
         }
+
+        public void runDotCover(String... arguments) throws IOException, InterruptedException
+        {
+            final TaskListener listener = context.get(TaskListener.class);
+            PrintStream logger = listener.getLogger();
+            final FilePath workspace = context.get(FilePath.class);
+            final Node node = workspaceToNode(workspace);
+            final DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
+
+            ArgumentListBuilder builder = new ArgumentListBuilder();
+            builder.addQuoted(dotCover.getHome());
+            builder.add(arguments);
+
+            workspace.createLauncher(listener)
+                    .launch()
+                    .cmds(builder)
+                    .stdout(logger)
+                    .start()
+                    .join();
+        }
+
     }
+
+
 
     private static boolean isSet(final String s)
     {
