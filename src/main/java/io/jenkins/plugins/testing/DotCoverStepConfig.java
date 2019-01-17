@@ -1,17 +1,15 @@
 package io.jenkins.plugins.testing;
 
-public class DotCoverStepConfig {
+public final class DotCoverStepConfig {
 
     private String dotcoverSnapshotPath;
+    private final String testPlatform;
 
-    public DotCoverStepConfig()
+
+    public DotCoverStepConfig(String testPlatform)
     {
-
+        this.testPlatform = testPlatform;
     }
-
-    public void setDotcoverSnapshotPath(String dotcoverSnapshotPath)
-
-    { this.dotcoverSnapshotPath = dotcoverSnapshotPath; }
 
     public String getDotcoverSnapshotPath()
     {

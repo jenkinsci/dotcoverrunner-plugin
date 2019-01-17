@@ -1,8 +1,6 @@
 package io.jenkins.plugins.testing;
 
 import com.google.common.base.Strings;
-import com.sun.mail.iap.Argument;
-import com.sun.org.apache.xpath.internal.Arg;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -11,7 +9,6 @@ import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 import jenkins.model.Jenkins;
-import jline.console.completer.ArgumentCompleter;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -294,6 +291,7 @@ public class DotCoverStep extends Step {
         }
 
 
+
         @Override
         protected Object run() throws Exception {
             final TaskListener listener = getContext().get(TaskListener.class);
@@ -317,16 +315,23 @@ public class DotCoverStep extends Step {
 
             FilePath dotCoverConfig = generateDotCoverConfig(tmpDirectory, null, "Threeshape.Contracts", "*", "*", "*", "", "", "", testAssemblies, testCaseFilter);
 
-            runDotCover("cover", new File(dotCoverConfig.toURI()).toString());
+            launchDotCover("cover", new File(dotCoverConfig.toURI()).toString());
 
-            FilePath p = tmpDirectory.child("snapshot.cov");
+            String snapshotPath = new File(tmpDirectory.child("snapshot.cov").toURI()).getAbsolutePath();
             FilePath indexFile = tmpDirectory.child("index.html");
-            runDotCover( "report", "/source=" + new File(p.toURI()).toString(), "/output=" + new File(indexFile.toURI()).toString(), "/reporttype=HTML");
+            launchDotCover( "report", "/source=" + snapshotPath, "/output=" + new File(indexFile.toURI()).toString(), "/reporttype=HTML");
+
+            String ndependXMLReport = new File(tmpDirectory.child("NDependCoverage.xml").toURI()).getAbsolutePath();
+            launchDotCover("report", "/source=" + snapshotPath, "/output=" + ndependXMLReport, "/reporttype=NDependXML");
+
+            String detailedXMLReport = new File(tmpDirectory.child("DetailedCoverage.xml").toURI()).getAbsolutePath();
+            launchDotCover("report", "/source=" + snapshotPath, "/output=" + detailedXMLReport, "/reporttype=DetailedXML" );
 
             return null;
         }
 
-        public void runDotCover(String... arguments) throws IOException, InterruptedException
+
+        public void launchDotCover(String... arguments) throws IOException, InterruptedException
         {
             final TaskListener listener = context.get(TaskListener.class);
             PrintStream logger = listener.getLogger();
