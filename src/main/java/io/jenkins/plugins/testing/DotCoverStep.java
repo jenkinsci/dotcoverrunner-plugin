@@ -1,7 +1,6 @@
 package io.jenkins.plugins.testing;
 
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
