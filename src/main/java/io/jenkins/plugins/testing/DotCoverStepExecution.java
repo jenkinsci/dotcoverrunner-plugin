@@ -17,8 +17,6 @@ import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 
 import javax.annotation.Nonnull;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +40,11 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
        TaskListener listener = context.get(TaskListener.class);
         try (PrintStream logger = listener.getLogger())
         {
+            logger.println("Ensuring that an empty work directory exists: " + DotCoverStepConfig.OUTPUT_DIR_NAME);
+            ensureWorkingDirectory(DotCoverStepConfig.OUTPUT_DIR_NAME);
 
             DotCoverStepConfig config = prepareDotCoverStepConfig(listener);
+            logger.println("Writing DotCover xml configuration file to " + config.getDotCoverConfigXmlPath());
             generateDotCoverConfigXml(config);
 
             logger.println("Generating code coverage data in " + config.getDotCoverSnapshotPath());
@@ -59,7 +60,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private DotCoverStepConfig prepareDotCoverStepConfig(TaskListener listener) throws IOException, InterruptedException {
-        FilePath tempDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR, "tmp");
+
 
         FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
         List<String> testAssemblies = new ArrayList<>();
@@ -78,19 +79,24 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
         Node node = workspaceToNode(workspace);
         String vsTestToolPath = new File(VsTestInstallation.getDefaultInstallation().forNode(node, listener).getHome()).getAbsolutePath();
-        String dotCoverSnapshotPath = new File(tempDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
-        String dotCoverConfigXmlPath = new File(tempDir.child(DotCoverStepConfig.CONFIG_NAME).toURI()).getAbsolutePath();
+
+        FilePath tempDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR, "tmp");
         String tempDirPath = new File(tempDir.toURI()).getAbsolutePath();
-        String outputDir = new File(workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME).toURI()).getAbsolutePath();
-        String htmlReportPath = new File(tempDir.child(DotCoverStepConfig.HTML_REPORT_NAME).toURI()).getAbsolutePath();
-        String nDependReportPath = new File(tempDir.child(DotCoverStepConfig.NDEPEND_XML_REPORT_NAME).toURI()).getAbsolutePath();
-        String detailedReportPath = new File(tempDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
+        String dotCoverSnapshotPath = new File(tempDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
+
+        FilePath outputDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
+        String outputDirPath = new File(outputDir.toURI()).getAbsolutePath();
+        String dotCoverConfigXmlPath = new File(outputDir.child(DotCoverStepConfig.CONFIG_NAME).toURI()).getAbsolutePath();
+
+        String htmlReportPath = new File(outputDir.child(DotCoverStepConfig.HTML_REPORT_NAME).toURI()).getAbsolutePath();
+        String nDependReportPath = new File(outputDir.child(DotCoverStepConfig.NDEPEND_XML_REPORT_NAME).toURI()).getAbsolutePath();
+        String detailedReportPath = new File(outputDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
 
         String mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
 
         String assembliesToExclude = (isSet(mandatoryExcludedAssemblies)) ? dotCoverStep.getCoverageExclude() + ";" + mandatoryExcludedAssemblies : dotCoverStep.getCoverageExclude();
 
-        DotCoverStepConfig dotCoverStepConfig = new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDir, dotCoverConfigXmlPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
+        DotCoverStepConfig dotCoverStepConfig = new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDirPath, dotCoverConfigXmlPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
 
         return dotCoverStepConfig;
     }
@@ -104,10 +110,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
        return new File(solutionFiles[0].toURI()).getAbsolutePath();
     }
 
-    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig) throws ParserConfigurationException, IOException, InterruptedException, TransformerException {
-        final String dotCoverMustExcludesFromCoverage = "*.Core;*.DongleSystem;*.FocusScanShared;*Test*;" +
-                "FluentAssertions;SlimDX;MathNet.Numerics"; // TODO Figure out what to do with this configuration. Perpaps it should be part of the
-
+    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig) throws IOException, InterruptedException {
 
         String vsTestArgs = "/platform:" + dotCoverStepConfig.getVsTestPlatform() + " ";
         vsTestArgs += "/logger:trx ";
@@ -243,19 +246,34 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         builder.addQuoted(dotCover.getHome());
         builder.add(arguments);
 
-        workspace.createLauncher(listener)
+        final int exitCode = workspace.createLauncher(listener)
                 .launch()
                 .cmds(builder)
                 .stdout(logger)
                 .start()
                 .join();
+
+        if (exitCode != 0)
+        {
+            throw new IllegalStateException("The launcher exited with a non-zero exit code. Exit code: " + exitCode);
+        }
+    }
+
+    private void ensureWorkingDirectory(String directoryName) throws IOException, InterruptedException {
+       FilePath workDir = workspace.child(directoryName);
+       if (workDir.exists())
+       {
+           workDir.deleteRecursive();
+       }
+
+        workDir.mkdirs();
     }
 
     /**
-     * Map given workspace to an agent node, or the jenkins instance
+     * Map workspace to its node or jenkins instance
      *
-     * @param workspace
-     * @return
+     * @param workspace The workspace to map
+     * @return The node that the workspace is associated with.
      */
     private static Node workspaceToNode(@Nonnull FilePath workspace) {
         Computer computer = workspace.toComputer();

@@ -22,7 +22,6 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final String APP_NAME = "dotcover";
 
-
     private String vsTestPlatform;
     private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;
@@ -39,14 +38,12 @@ public class DotCoverStep extends Step implements Serializable {
 
     @DataBoundConstructor
     public DotCoverStep() {
-
     }
-
 
     @SuppressWarnings("unused") // Used by Stapler
     @DataBoundSetter
     public void setVsTestCaseFilter(String vsTestCaseFilter) {
-        this.vsTestCaseFilter = Util.fixEmptyAndTrim(vsTestCaseFilter);
+        this.vsTestCaseFilter = vsTestCaseFilter;
     }
 
     public String getVsTestCaseFilter() {

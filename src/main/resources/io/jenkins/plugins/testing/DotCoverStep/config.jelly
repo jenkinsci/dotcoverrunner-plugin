@@ -8,6 +8,12 @@
       </select>
     </f:entry>
 
+
+
+    <f:entry field="vsTestArgs" title="VsTest additional arguments">
+        <f:textbox/>
+    </f:entry>
+
     <f:entry field="vsTestAssemblyFilter" title="Test assembly filter">
           <f:textbox/>
     </f:entry>

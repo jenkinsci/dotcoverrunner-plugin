@@ -45,7 +45,6 @@ final class DotCoverStepConfig implements Serializable {
         if (detailedXmlReportPath == null) throw  new NullArgumentException("detailedXmlReportPath");
         if (vsTestPlatform == null) throw  new NullArgumentException("vsTestPlatform");
         if (vsTestCaseFilter == null) throw  new NullArgumentException("vsTestCaseFilter");
-        if (vsTestArgs == null) throw  new NullArgumentException("vsTestArgs");
         if (testAssemblyPaths == null) throw  new NullArgumentException("testAssemblyPaths");
         this.dotCoverSnapshotPath = dotCoverSnapshotPath;
         this.htmlReportPath = htmlReportPath;
