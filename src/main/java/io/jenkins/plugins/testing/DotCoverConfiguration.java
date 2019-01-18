@@ -35,12 +35,8 @@ public class DotCoverConfiguration extends GlobalConfiguration implements Serial
     @DataBoundSetter @SuppressWarnings("unused")
     public void setMandatoryExcludedAssemblies(String mandatoryExcludedAssemblies)
     {
-        if (this.mandatoryExcludedAssemblies != mandatoryExcludedAssemblies) {
             this.mandatoryExcludedAssemblies = mandatoryExcludedAssemblies;
             save();
-        }
     }
-
-
 
 }
