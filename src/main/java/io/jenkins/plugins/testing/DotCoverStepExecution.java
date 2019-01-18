@@ -41,7 +41,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         try (PrintStream logger = listener.getLogger())
         {
             logger.println("Ensuring that an empty work directory exists: " + DotCoverStepConfig.OUTPUT_DIR_NAME);
-            ensureWorkingDirectory(DotCoverStepConfig.OUTPUT_DIR_NAME);
+            ensureWorkingDirectory();
 
             DotCoverStepConfig config = prepareDotCoverStepConfig(listener);
             logger.println("Writing DotCover xml configuration file to " + config.getDotCoverConfigXmlPath());
@@ -96,9 +96,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
         String assembliesToExclude = (isSet(mandatoryExcludedAssemblies)) ? dotCoverStep.getCoverageExclude() + ";" + mandatoryExcludedAssemblies : dotCoverStep.getCoverageExclude();
 
-        DotCoverStepConfig dotCoverStepConfig = new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDirPath, dotCoverConfigXmlPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
-
-        return dotCoverStepConfig;
+        return new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDirPath, dotCoverConfigXmlPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
     }
 
     private String inferSolutionFilePathOrDie() throws IOException, InterruptedException {
@@ -111,23 +109,28 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig) throws IOException, InterruptedException {
-
-        String vsTestArgs = "/platform:" + dotCoverStepConfig.getVsTestPlatform() + " ";
-        vsTestArgs += "/logger:trx ";
+        StringBuilder vsTestArgs = new StringBuilder();
+        vsTestArgs.append("/platform:");
+        vsTestArgs.append(dotCoverStepConfig.getVsTestPlatform());
+        vsTestArgs.append(' ');
+        vsTestArgs.append("/logger:trx");
+        vsTestArgs.append(' ');
 
         for (String assembly : dotCoverStepConfig.getTestAssemblyPaths())
         {
-            vsTestArgs += assembly + " ";
+            vsTestArgs.append(assembly);
+            vsTestArgs.append(' ');
         }
 
         if (isSet(dotCoverStepConfig.getVsTestCaseFilter()))
         {
-            vsTestArgs+= "/testCaseFilter:" + dotCoverStepConfig.getVsTestCaseFilter();
+            vsTestArgs.append("/testCaseFilter:");
+            vsTestArgs.append(dotCoverStepConfig.getVsTestCaseFilter());
         }
 
         if (isSet(dotCoverStepConfig.getVsTestArgs()))
         {
-            vsTestArgs += " " + dotCoverStepConfig.getVsTestArgs();
+            vsTestArgs.append(dotCoverStepConfig.getVsTestArgs());
         }
 
         Document document = DocumentHelper.createDocument();
@@ -138,7 +141,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         targetExecutable.addText(dotCoverStepConfig.getVsTestPath());
 
         Element targetArguments = analyseParams.addElement("TargetArguments");
-        targetArguments.addText(vsTestArgs);
+        targetArguments.addText(vsTestArgs.toString());
 
         Element targetWorkingDir = analyseParams.addElement("TargetWorkingDir");
         targetWorkingDir.addText(dotCoverStepConfig.getOutputDirectory());
@@ -259,8 +262,8 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
     }
 
-    private void ensureWorkingDirectory(String directoryName) throws IOException, InterruptedException {
-       FilePath workDir = workspace.child(directoryName);
+    private void ensureWorkingDirectory() throws IOException, InterruptedException {
+       FilePath workDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
        if (workDir.exists())
        {
            workDir.deleteRecursive();
