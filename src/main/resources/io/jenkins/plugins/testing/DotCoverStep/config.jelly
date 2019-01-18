@@ -1,18 +1,19 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry field="testPlatform" title="Platform to target">
-      <select name="testPlatform">
-             <option value="x86">x86</option>
+    <f:entry field="vsTestPlatform" title="Platform to target">
+      <select name="vsTestPlatform">
              <option value="x64">x64</option>
+             <option value="x86">x86</option>
+             <option value="ARM">ARM</option>
       </select>
     </f:entry>
 
-    <f:entry field="pathToDotCover" title="Path to DotCover tool">
+    <f:entry field="vsTestAssemblyFilter" title="Test assembly filter">
           <f:textbox/>
     </f:entry>
 
-    <f:entry field="testAssemblyFilter" title="Test assembly filter">
-          <f:textbox/>
+    <f:entry field="vsTestCaseFilter" title="VSTest test case filter" >
+          <f:textbox default="${descriptor.defaultTestCaseFilter}" />
     </f:entry>
 
 </j:jelly>
