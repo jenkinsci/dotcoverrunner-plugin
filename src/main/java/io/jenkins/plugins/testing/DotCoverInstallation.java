@@ -26,6 +26,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
 
     public static final String DOTCOVERTOOL_DEFAULT_NAME = "Default";
     public static final String WINDOWS_BINARY_NAME="dotcover.exe";
+    private static final long serialVersionUID = 4786571647787802473L;
 
     /**
      * Default constructor invoked by jenkins.
