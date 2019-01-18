@@ -37,7 +37,7 @@ final class DotCoverStepConfig implements Serializable {
     private final String vsTestPath;
 
 
-    DotCoverStepConfig(String dotCoverSnapshotPath, String htmlReportPath, String nDependReportPath, String detailedXmlReportPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String solutionFilePath, String outputDirectory, List<String> testAssemblyPaths, String processInclude, String coverageClassInclude, String coverageInclude, String coverageAssemblyExclude, String coverageFunctionInclude, String dotCoverConfigXmlPath, String tempDirectory, String processExclude, String vsTestPath)
+    DotCoverStepConfig(String solutionFilePath, String tempDirectory, String outputDirectory, String dotCoverConfigXmlPath, String dotCoverSnapshotPath, String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, List<String> testAssemblyPaths, String htmlReportPath, String nDependReportPath, String detailedXmlReportPath, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
     {
         if (dotCoverSnapshotPath == null) throw new NullArgumentException("dotCoverSnapshotPath");
         if (htmlReportPath == null) throw new NullArgumentException("htmlReportPath");

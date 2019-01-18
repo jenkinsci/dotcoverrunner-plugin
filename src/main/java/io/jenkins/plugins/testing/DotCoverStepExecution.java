@@ -90,7 +90,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
         String assembliesToExclude = (isSet(mandatoryExcludedAssemblies)) ? dotCoverStep.getCoverageExclude() + ";" + mandatoryExcludedAssemblies : dotCoverStep.getCoverageExclude();
 
-        DotCoverStepConfig dotCoverStepConfig = new DotCoverStepConfig(dotCoverSnapshotPath, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), solutionFilePath, outputDir, testAssemblies, dotCoverStep.getProcessInclude(), dotCoverStep.getCoverageClassInclude(), dotCoverStep.getCoverageInclude(), assembliesToExclude, dotCoverStep.getCoverageFunctionInclude(), dotCoverConfigXmlPath, tempDirPath, dotCoverStep.getProcessExclude(), vsTestToolPath);
+        DotCoverStepConfig dotCoverStepConfig = new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDir, dotCoverConfigXmlPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
 
         return dotCoverStepConfig;
     }
