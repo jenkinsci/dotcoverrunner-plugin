@@ -51,7 +51,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
             launchDotCover("report","/reporttype=HTML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getHTMLReportPath()); //TODO Fix magic strings
 
-            launchDotCover("report","/reporttype=NDependXML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getNdependXmlReportPath()); //TODO Fix magic strings
+            launchDotCover("report","/reporttype=NDependXML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getNDependXmlReportPath()); //TODO Fix magic strings
 
             launchDotCover("report","/reporttype=NDependXML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getDetailedXmlReportPath()); //TODO Fix magic strings
         }

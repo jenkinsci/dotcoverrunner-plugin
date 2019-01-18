@@ -76,7 +76,7 @@ final class DotCoverStepConfig implements Serializable {
         return htmlReportPath;
     }
 
-    public String getNdependXmlReportPath()
+    public String getNDependXmlReportPath()
 
     { return nDependReportPath; }
 
