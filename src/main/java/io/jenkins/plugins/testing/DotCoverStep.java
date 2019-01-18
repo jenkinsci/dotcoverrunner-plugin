@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Logger;
 
 public class DotCoverStep extends Step implements Serializable {
 
@@ -23,9 +22,6 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final String APP_NAME = "dotcover";
     public static final String DEFAULT_TEST_ASSEMBLIES_GLOB="\\**\\*Test\\bin\\**\\Release\\*Test.dll";
-    private static final Logger LOGGER = Logger.getLogger(DotCoverStep.class.getName());
-
-    private String outputDirectory;
 
     private String vsTestPlatform;
     private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
@@ -74,7 +70,7 @@ public class DotCoverStep extends Step implements Serializable {
         return vsTestAssemblyFilter;
     }
 
-    @DataBoundSetter
+    @DataBoundSetter @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setSolutionDir(String solutionDir)
     {
         this.solutionDir = solutionDir;
@@ -98,15 +94,6 @@ public class DotCoverStep extends Step implements Serializable {
 
     public String getVsTestArgs() {
         return vsTestArgs;
-    }
-
-    public String getOutputDirectory() {
-        return outputDirectory;
-    }
-
-    @DataBoundSetter @SuppressWarnings("unused")
-    public void setOutputDirectory(String outputDirectory) {
-        this.outputDirectory = outputDirectory;
     }
 
     public String getCoverageInclude() {
