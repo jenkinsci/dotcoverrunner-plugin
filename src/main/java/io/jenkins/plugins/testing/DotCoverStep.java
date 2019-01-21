@@ -1,6 +1,8 @@
 package io.jenkins.plugins.testing;
 
 import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
@@ -13,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class DotCoverStep extends Step implements Serializable {
@@ -201,8 +204,12 @@ public class DotCoverStep extends Step implements Serializable {
 
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
-            return Collections.singleton(TaskListener.class);
-        } //TODO Should include more...FilePath.class
+            final Set<Class<?>> contexts = new HashSet<>();
+            contexts.add(TaskListener.class);
+            contexts.add(Launcher.class);
+            contexts.add(FilePath.class);
+            return Collections.unmodifiableSet(contexts);
+        }
 
     }
 
