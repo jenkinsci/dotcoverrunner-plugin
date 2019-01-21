@@ -8,8 +8,8 @@
         </select>
     </f:entry>
 
-    <f:entry field="vsTestCaseFilter" title="VSTest test case filter">
-        <f:textbox default="${descriptor.defaultTestCaseFilter}"/>
+    <f:entry field="vsTestCaseFilter" title="Test case filter" description="Test case filter passed through to VSTest.">
+        <f:textbox default="${descriptor.DEFAULT_VSTESTCASEFILTER}"/>
     </f:entry>
 
     <f:entry field="vsTestAssemblyFilter"

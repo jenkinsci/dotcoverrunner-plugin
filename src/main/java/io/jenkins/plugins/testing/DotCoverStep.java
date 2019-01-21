@@ -3,6 +3,7 @@ package io.jenkins.plugins.testing;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
@@ -43,6 +44,38 @@ public class DotCoverStep extends Step implements Serializable {
     public DotCoverStep() {
     }
 
+    @Override
+    public StepExecution start(StepContext stepContext) throws IOException, InterruptedException {
+        return new DotCoverStepExecution(stepContext, this);
+    }
+
+    @Extension
+    public static class DescriptorImpl extends StepDescriptor {
+
+        public static final String DEFAULT_VSTESTCASEFILTER = "**Test*";
+        public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
+
+        @Override
+        public String getFunctionName() {
+            return JENKINS_FUNCTION_NAME;
+        }
+
+        @Override
+        @Nonnull
+        public String getDisplayName() {
+            return "Generate code coverage data and report(s)";
+        }
+
+        @Override
+        public Set<? extends Class<?>> getRequiredContext() {
+            final Set<Class<?>> contexts = new HashSet<>();
+            contexts.add(TaskListener.class);
+            contexts.add(Launcher.class);
+            contexts.add(FilePath.class);
+            return Collections.unmodifiableSet(contexts);
+        }
+    }
+
     public String getVsTestCaseFilter() {
         return vsTestCaseFilter;
     }
@@ -59,7 +92,7 @@ public class DotCoverStep extends Step implements Serializable {
 
     @DataBoundSetter
     public void setVsTestPlatform(String vsTestPlatform) {
-        this.vsTestPlatform = vsTestPlatform;
+        this.vsTestPlatform = Util.fixEmptyAndTrim(vsTestPlatform);
     }
 
     @SuppressWarnings("unused") // Used by Stapler
@@ -70,17 +103,14 @@ public class DotCoverStep extends Step implements Serializable {
     @SuppressWarnings("unused") // Used by Stapler
     @DataBoundSetter
     public void setVsTestAssemblyFilter(String vsTestAssemblyFilter) {
-        this.vsTestAssemblyFilter = vsTestAssemblyFilter;
+        this.vsTestAssemblyFilter = Util.fixEmptyAndTrim(vsTestAssemblyFilter);
     }
 
     public String getGetSolutionDir() {
         return getSolutionDir();
     }
 
-    @Override
-    public StepExecution start(StepContext stepContext) throws IOException, InterruptedException {
-        return new DotCoverStepExecution(stepContext, this);
-    }
+
 
     public String getVsTestArgs() {
         return vsTestArgs;
@@ -88,7 +118,7 @@ public class DotCoverStep extends Step implements Serializable {
 
     @DataBoundSetter
     public void setVsTestArgs(String vsTestArgs) {
-        this.vsTestArgs = vsTestArgs;
+        this.vsTestArgs = Util.fixEmptyAndTrim(vsTestArgs);
     }
 
     public String getCoverageInclude() {
@@ -191,32 +221,5 @@ public class DotCoverStep extends Step implements Serializable {
         this.detailedXMLReportPath = detailedXMLReportPath;
     }
 
-    @Extension
-    public static class DescriptorImpl extends StepDescriptor {
-
-        public static final String DEFAULT_VSTESTCASEFILTER = "**Test*";
-        public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
-
-        @Override
-        public String getFunctionName() {
-            return JENKINS_FUNCTION_NAME;
-        }
-
-        @Override
-        @Nonnull
-        public String getDisplayName() {
-            return "Generate code coverage data and report(s)";
-        }
-
-        @Override
-        public Set<? extends Class<?>> getRequiredContext() {
-            final Set<Class<?>> contexts = new HashSet<>();
-            contexts.add(TaskListener.class);
-            contexts.add(Launcher.class);
-            contexts.add(FilePath.class);
-            return Collections.unmodifiableSet(contexts);
-        }
-
-    }
 
 }
