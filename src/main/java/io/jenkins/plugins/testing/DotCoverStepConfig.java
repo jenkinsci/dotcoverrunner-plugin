@@ -3,7 +3,6 @@ package io.jenkins.plugins.testing;
 import org.apache.commons.lang.NullArgumentException;
 
 import java.io.Serializable;
-import java.util.List;
 
 final class DotCoverStepConfig implements Serializable {
 
@@ -13,7 +12,6 @@ final class DotCoverStepConfig implements Serializable {
     public static final String DETAILED_XML_REPORT_NAME="DetailedCoverage.xml";
     public static final String SNAPSHOT_NAME = "snapshot.cov";
     public static final String OUTPUT_DIR_NAME = "DotCover";
-    public static final String CONFIG_NAME = "DotCoverConfig.xml";
     public static final String IFRAME_NO_JAVASCRIPT ="<iframe id=\"sourceCode\">";
     public static final String IFRAME_ALLOW_JAVASCRIPT ="<iframe sandbox=\"allow-scripts allow-same-origin allow-top-navigation\" id=\"sourceCode\">";
 
@@ -34,13 +32,9 @@ final class DotCoverStepConfig implements Serializable {
     private final String processExclude;
     private final String vsTestPath;
 
-
-    DotCoverStepConfig(String solutionFilePath, String tempDirectory, String outputDirectory, String dotCoverSnapshotPath, String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String htmlReportPath, String nDependReportPath, String detailedXmlReportPath, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
+    DotCoverStepConfig(String solutionFilePath, String tempDirectory, String outputDirectory, String dotCoverSnapshotPath, String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
     {
         if (dotCoverSnapshotPath == null) throw new NullArgumentException("dotCoverSnapshotPath");
-        if (htmlReportPath == null) throw new NullArgumentException("htmlReportPath");
-        if (nDependReportPath == null) throw new NullArgumentException("nDependReportPath");
-        if (detailedXmlReportPath == null) throw  new NullArgumentException("detailedXmlReportPath");
         if (vsTestPlatform == null) throw  new NullArgumentException("vsTestPlatform");
         if (vsTestCaseFilter == null) throw  new NullArgumentException("vsTestCaseFilter");
         if (testAssemblyPaths == null) throw  new NullArgumentException("testAssemblyPaths");

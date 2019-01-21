@@ -119,16 +119,11 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         FilePath outputDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
         String outputDirPath = new File(outputDir.toURI()).getAbsolutePath();
 
-
-        String htmlReportPath = new File(outputDir.child(DotCoverStepConfig.HTML_REPORT_NAME).toURI()).getAbsolutePath();
-        String nDependReportPath = new File(outputDir.child(DotCoverStepConfig.NDEPEND_XML_REPORT_NAME).toURI()).getAbsolutePath();
-        String detailedReportPath = new File(outputDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
-
         String mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
 
         String assembliesToExclude = (isSet(mandatoryExcludedAssemblies)) ? dotCoverStep.getCoverageExclude() + ";" + mandatoryExcludedAssemblies : dotCoverStep.getCoverageExclude();
 
-        return new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDirPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, htmlReportPath, nDependReportPath, detailedReportPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
+        return new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDirPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
     }
 
     private String inferSolutionFilePathOrDie() throws IOException, InterruptedException {
