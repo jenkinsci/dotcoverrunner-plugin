@@ -18,6 +18,11 @@ import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 
 import javax.annotation.Nonnull;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,35 +33,46 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     private final DotCoverStep dotCoverStep;
     private final FilePath workspace;
 
-   public DotCoverStepExecution(StepContext context, DotCoverStep dotCoverStep) throws IOException, InterruptedException {
-       super(context);
-       this.dotCoverStep = dotCoverStep;
-       this.context = context;
-       workspace = context.get(FilePath.class);
-   }
+    public DotCoverStepExecution(StepContext context, DotCoverStep dotCoverStep) throws IOException, InterruptedException {
+        super(context);
+        this.context = context;
+        this.workspace = context.get(FilePath.class);
+        this.dotCoverStep = dotCoverStep;
+    }
 
     @Override
     protected DotCoverStep run() throws Exception {
-       TaskListener listener = context.get(TaskListener.class);
-        try (PrintStream logger = listener.getLogger())
-        {
-            logger.println("Ensuring that an empty work directory exists: " + DotCoverStepConfig.OUTPUT_DIR_NAME);
-            ensureWorkingDirectory();
+        TaskListener listener = context.get(TaskListener.class);
+        try (PrintStream logger = listener.getLogger()) {
+            logger.println("Ensuring this is an empty work directory: " + Paths.get(DotCoverStepConfig.OUTPUT_DIR_NAME).toAbsolutePath());
+            cleanWorkingDirectory();
 
             DotCoverStepConfig config = prepareDotCoverStepConfig(listener);
             logger.println("Writing DotCover xml configuration file to " + config.getDotCoverConfigXmlPath());
             generateDotCoverConfigXml(config);
 
             logger.println("Generating code coverage data in " + config.getDotCoverSnapshotPath());
-            launchDotCover("cover", config.getDotCoverConfigXmlPath()); // Generate coverage information
+            launchDotCover("Cover", config.getDotCoverConfigXmlPath()); // Generate coverage information
 
-            launchDotCover("report","/reporttype=HTML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getHTMLReportPath()); //TODO Fix magic strings
+            if (isSet(config.getHTMLReportPath())) {
+                launchDotCover("Report", "/ReportType=HTML", "/Source=" + config.getDotCoverSnapshotPath(), "/Output=" + config.getHTMLReportPath());
+                relaxJavaScriptSecurity(config.getHTMLReportPath());
+            }
 
-            launchDotCover("report","/reporttype=NDependXML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getNDependXmlReportPath()); //TODO Fix magic strings
 
-            launchDotCover("report","/reporttype=NDependXML", "/source=" + config.getDotCoverSnapshotPath(), "/output=" + config.getDetailedXmlReportPath()); //TODO Fix magic strings
+            launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + config.getDotCoverSnapshotPath(), "/Output=" + config.getNDependXmlReportPath());
+
+            launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + config.getDotCoverSnapshotPath(), "/Output=" + config.getDetailedXmlReportPath());
         }
         return dotCoverStep;
+    }
+
+    private void relaxJavaScriptSecurity(String htmlReportPath) throws IOException {
+        final Path report = Paths.get(htmlReportPath);
+        final Charset utf8 = StandardCharsets.UTF_8;
+        String content = new String(Files.readAllBytes(report), utf8);
+        content = content.replaceAll(DotCoverStepConfig.IFRAME_NO_JAVASCRIPT, DotCoverStepConfig.IFRAME_ALLOW_JAVASCRIPT);
+        Files.write(report, content.getBytes());
     }
 
     private DotCoverStepConfig prepareDotCoverStepConfig(TaskListener listener) throws IOException, InterruptedException {
@@ -64,16 +80,14 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
         FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
         List<String> testAssemblies = new ArrayList<>();
-        for (FilePath assemblyPath : assemblies)
-        {
+        for (FilePath assemblyPath : assemblies) {
             String absolutePath = new File(assemblyPath.absolutize().toURI()).toString();
             testAssemblies.add(absolutePath);
         }
 
         String solutionFilePath = null;
-        
-        if (!isSet(dotCoverStep.getGetSolutionDir()))
-        {
+
+        if (!isSet(dotCoverStep.getGetSolutionDir())) {
             solutionFilePath = inferSolutionFilePathOrDie();
         }
 
@@ -100,12 +114,12 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private String inferSolutionFilePathOrDie() throws IOException, InterruptedException {
-       FilePath[] solutionFiles = workspace.list("**/*.sln");
-       if (solutionFiles.length != 1) // TODO check for nulls before returning zero-index
-       {
-           throw new IllegalStateException("More than one solution (.sln) file present. You need to specify which one you want via the solutiondir attribute.");
-       }
-       return new File(solutionFiles[0].toURI()).getAbsolutePath();
+        FilePath[] solutionFiles = workspace.list("**/*.sln");
+        if (solutionFiles.length != 1) // TODO check for nulls before returning zero-index, check for zero solution files.
+        {
+            throw new IllegalStateException("More than one solution (.sln) file present. You need to specify which one you want via the solutiondir attribute.");
+        }
+        return new File(solutionFiles[0].toURI()).getAbsolutePath();
     }
 
     private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig) throws IOException, InterruptedException {
@@ -116,20 +130,17 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         vsTestArgs.append("/logger:trx");
         vsTestArgs.append(' ');
 
-        for (String assembly : dotCoverStepConfig.getTestAssemblyPaths())
-        {
+        for (String assembly : dotCoverStepConfig.getTestAssemblyPaths()) {
             vsTestArgs.append(assembly);
             vsTestArgs.append(' ');
         }
 
-        if (isSet(dotCoverStepConfig.getVsTestCaseFilter()))
-        {
+        if (isSet(dotCoverStepConfig.getVsTestCaseFilter())) {
             vsTestArgs.append("/testCaseFilter:");
             vsTestArgs.append(dotCoverStepConfig.getVsTestCaseFilter());
         }
 
-        if (isSet(dotCoverStepConfig.getVsTestArgs()))
-        {
+        if (isSet(dotCoverStepConfig.getVsTestArgs())) {
             vsTestArgs.append(dotCoverStepConfig.getVsTestArgs());
         }
 
@@ -163,26 +174,20 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         processFilter(processFilters.addElement("IncludeFilters"), dotCoverStepConfig.getProcessInclude());
         processFilter(processFilters.addElement("ExcludeFilters"), dotCoverStepConfig.getProcessExclude());
 
-        if (isSet(dotCoverStepConfig.getCoverageInclude()))
-        {
-            for (String assemblyName : dotCoverStepConfig.getCoverageInclude().split(";"))
-            {
-                if (isSet(assemblyName))
-                {
+        if (isSet(dotCoverStepConfig.getCoverageInclude())) {
+            for (String assemblyName : dotCoverStepConfig.getCoverageInclude().split(";")) {
+                if (isSet(assemblyName)) {
                     Element filterEntry = includeFilters.addElement("FilterEntry");
-                    filterEntry.addElement( "ModuleMask").addText(assemblyName);
-                    filterEntry.addElement( "ClassMask").addText("*");
-                    filterEntry.addElement( "FunctionMask").addText("*");
+                    filterEntry.addElement("ModuleMask").addText(assemblyName);
+                    filterEntry.addElement("ClassMask").addText("*");
+                    filterEntry.addElement("FunctionMask").addText("*");
                 }
             }
         }
 
-        if (isSet(dotCoverStepConfig.getCoverageClassInclude()))
-        {
-            for (String className : dotCoverStepConfig.getCoverageClassInclude().split(";"))
-            {
-                if (isSet(className))
-                {
+        if (isSet(dotCoverStepConfig.getCoverageClassInclude())) {
+            for (String className : dotCoverStepConfig.getCoverageClassInclude().split(";")) {
+                if (isSet(className)) {
                     Element filterEntry = includeFilters.addElement("FilterEntry");
                     filterEntry.addElement("ModuleMask").addText("*");
                     filterEntry.addElement("ClassMask").addText(className);
@@ -191,12 +196,9 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             }
         }
 
-        if (isSet(dotCoverStepConfig.getCoverageFunctionInclude()))
-        {
-            for (String method: dotCoverStepConfig.getCoverageFunctionInclude().split(";"))
-            {
-                if (isSet(method))
-                {
+        if (isSet(dotCoverStepConfig.getCoverageFunctionInclude())) {
+            for (String method : dotCoverStepConfig.getCoverageFunctionInclude().split(";")) {
+                if (isSet(method)) {
                     Element filterEntry = includeFilters.addElement("FilterEntry");
                     filterEntry.addElement("ModuleMask").addText("*");
                     filterEntry.addElement("ClassMask").addText("*");
@@ -205,12 +207,9 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             }
         }
 
-        if (isSet(dotCoverStepConfig.getCoverageAssemblyExclude()))
-        {
-            for (String assembly: dotCoverStepConfig.getCoverageAssemblyExclude().split(";"))
-            {
-                if (isSet(assembly))
-                {
+        if (isSet(dotCoverStepConfig.getCoverageAssemblyExclude())) {
+            for (String assembly : dotCoverStepConfig.getCoverageAssemblyExclude().split(";")) {
+                if (isSet(assembly)) {
                     Element filterEntry = excludeFilters.addElement("FilterEntry");
                     filterEntry.addElement("ModuleMask").addText(assembly);
                 }
@@ -220,25 +219,22 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         try (OutputStream out = new FilePath(new File(dotCoverStepConfig.getDotCoverConfigXmlPath())).write()) {
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(out, format);
-            writer.write( document );
+            writer.write(document);
             writer.close();
         }
     }
 
-    private void processFilter(Element parentElement, String input)
-    {
+    private void processFilter(Element parentElement, String input) {
         if (!isSet(input)) return;
 
-        for (String s: input.split(";"))
-        {
+        for (String s : input.split(";")) {
             if (isSet(s)) {
                 parentElement.addElement("ProcessMask").addText(s);
             }
         }
     }
 
-    public void launchDotCover(String... arguments) throws IOException, InterruptedException
-    {
+    public void launchDotCover(String... arguments) throws IOException, InterruptedException {
         final TaskListener listener = context.get(TaskListener.class);
         PrintStream logger = listener.getLogger();
         final FilePath workspace = context.get(FilePath.class);
@@ -256,18 +252,16 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
                 .start()
                 .join();
 
-        if (exitCode != 0)
-        {
+        if (exitCode != 0) {
             throw new IllegalStateException("The launcher exited with a non-zero exit code. Exit code: " + exitCode);
         }
     }
 
-    private void ensureWorkingDirectory() throws IOException, InterruptedException {
-       FilePath workDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
-       if (workDir.exists())
-       {
-           workDir.deleteRecursive();
-       }
+    private void cleanWorkingDirectory() throws IOException, InterruptedException {
+        FilePath workDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
+        if (workDir.exists()) {
+            workDir.deleteRecursive();
+        }
 
         workDir.mkdirs();
     }
@@ -285,8 +279,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         return (node != null) ? node : Jenkins.get();
     }
 
-    private static boolean isSet(final String s)
-    {
+    private static boolean isSet(final String s) {
         return !Strings.isNullOrEmpty(s);
     }
 

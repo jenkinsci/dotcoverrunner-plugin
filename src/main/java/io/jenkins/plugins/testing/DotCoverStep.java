@@ -21,6 +21,8 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final String APP_NAME = "dotcover";
 
+
+
     private String vsTestPlatform;
     private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;

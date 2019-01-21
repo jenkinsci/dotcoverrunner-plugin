@@ -14,6 +14,9 @@ final class DotCoverStepConfig implements Serializable {
     public static final String SNAPSHOT_NAME = "snapshot.cov";
     public static final String OUTPUT_DIR_NAME = "DotCover";
     public static final String CONFIG_NAME = "DotCoverConfig.xml";
+    public static final String IFRAME_NO_JAVASCRIPT ="<iframe id=\"sourceCode\">";
+    public static final String IFRAME_ALLOW_JAVASCRIPT ="<iframe sandbox=\"allow-scripts allow-same-origin allow-top-navigation\" id=\"sourceCode\">";
+
     private static final long serialVersionUID = 6113092202485062423L;
 
     private final String dotCoverSnapshotPath;
