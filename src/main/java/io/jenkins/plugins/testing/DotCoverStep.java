@@ -194,7 +194,7 @@ public class DotCoverStep extends Step implements Serializable {
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
             return Collections.singleton(TaskListener.class);
-        } //TODO Should include more...
+        } //TODO Should include more...FilePath.class
 
     }
 
