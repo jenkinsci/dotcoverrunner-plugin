@@ -38,7 +38,6 @@ public class DotCoverStep extends Step implements Serializable {
     private String coverageExclude;
     private String processInclude;
     private String processExclude;
-    private String solutionDir;
 
     @DataBoundConstructor
     public DotCoverStep() {
@@ -105,11 +104,6 @@ public class DotCoverStep extends Step implements Serializable {
     public void setVsTestAssemblyFilter(String vsTestAssemblyFilter) {
         this.vsTestAssemblyFilter = Util.fixEmptyAndTrim(vsTestAssemblyFilter);
     }
-
-    public String getGetSolutionDir() {
-        return getSolutionDir();
-    }
-
 
 
     public String getVsTestArgs() {
@@ -179,16 +173,6 @@ public class DotCoverStep extends Step implements Serializable {
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setNDependXmlReportPath(String nDependXmlReportPath) {
         this.nDependXmlReportPath = nDependXmlReportPath;
-    }
-
-    public String getSolutionDir() {
-        return solutionDir;
-    }
-
-    @DataBoundSetter
-    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
-    public void setSolutionDir(String solutionDir) {
-        this.solutionDir = solutionDir;
     }
 
     public String getProcessInclude() {

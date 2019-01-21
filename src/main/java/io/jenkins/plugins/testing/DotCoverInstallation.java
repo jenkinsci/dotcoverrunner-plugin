@@ -81,7 +81,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
      */
     @Override
     public DotCoverInstallation forNode(@Nonnull Node node, TaskListener log) throws IOException, InterruptedException {
-        final String home = translateFor(node, log);
+        String home = translateFor(node, log);
         return new DotCoverInstallation(getName(), home, Collections.emptyList());
     }
 

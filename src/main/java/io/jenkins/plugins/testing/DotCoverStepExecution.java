@@ -45,23 +45,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
     }
 
-    /**
-     * Map workspace to its node or jenkins instance
-     *
-     * @param workspace The workspace to map
-     * @return The node that the workspace is associated with.
-     */
-    private static Node workspaceToNode(@Nonnull FilePath workspace) {
-        Computer computer = workspace.toComputer();
-        Node node = null;
-        if (computer != null) node = computer.getNode();
-        return (node != null) ? node : Jenkins.get();
-    }
-
-    private static boolean isSet(final String s) {
-        return !Strings.isNullOrEmpty(s);
-    }
-
     @Override
     protected DotCoverStep run() throws Exception {
         TaskListener listener = context.get(TaskListener.class);
@@ -275,6 +258,23 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             outputDir.deleteRecursive();
         }
         outputDir.mkdirs();
+    }
+
+    /**
+     * Map workspace to its node or jenkins instance
+     *
+     * @param workspace The workspace to map
+     * @return The node that the workspace is associated with.
+     */
+    private static Node workspaceToNode(@Nonnull FilePath workspace) {
+        Computer computer = workspace.toComputer();
+        Node node = null;
+        if (computer != null) node = computer.getNode();
+        return (node != null) ? node : Jenkins.get();
+    }
+
+    private static boolean isSet(final String s) {
+        return !Strings.isNullOrEmpty(s);
     }
 
 }
