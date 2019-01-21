@@ -8,12 +8,13 @@ final class DotCoverStepConfig implements Serializable {
 
     public static final String DOTCOVER_TEMP_DIR_NAME = "dotcover-work";
     public static final String HTML_REPORT_NAME = "index.html";
-    public static final String NDEPEND_XML_REPORT_NAME="NDependCoverage.xml";
-    public static final String DETAILED_XML_REPORT_NAME="DetailedCoverage.xml";
+    public static final String NDEPEND_XML_REPORT_NAME = "NDependCoverage.xml";
+    public static final String DETAILED_XML_REPORT_NAME = "DetailedCoverage.xml";
     public static final String SNAPSHOT_NAME = "snapshot.cov";
+    public static final String SNAPSHOT_MERGE_SUFFIX = ".merge.cov";
     public static final String OUTPUT_DIR_NAME = "DotCover";
-    public static final String IFRAME_NO_JAVASCRIPT ="<iframe id=\"sourceCode\">";
-    public static final String IFRAME_ALLOW_JAVASCRIPT ="<iframe sandbox=\"allow-scripts allow-same-origin allow-top-navigation\" id=\"sourceCode\">";
+    public static final String IFRAME_NO_JAVASCRIPT = "<iframe id=\"sourceCode\">";
+    public static final String IFRAME_ALLOW_JAVASCRIPT = "<iframe sandbox=\"allow-scripts allow-same-origin allow-top-navigation\" id=\"sourceCode\">";
     public static final String CONFIG_XML_NAME = "DotCoverConfig.xml";
 
     private static final long serialVersionUID = 6113092202485062423L;
@@ -30,11 +31,10 @@ final class DotCoverStepConfig implements Serializable {
     private final String processExclude;
     private final String vsTestPath;
 
-    DotCoverStepConfig(String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
-    {
-        if (vsTestPlatform == null) throw  new NullArgumentException("vsTestPlatform");
-        if (vsTestCaseFilter == null) throw  new NullArgumentException("vsTestCaseFilter");
-        if (testAssemblyPaths == null) throw  new NullArgumentException("testAssemblyPaths");
+    DotCoverStepConfig(String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude) {
+        if (vsTestPlatform == null) throw new NullArgumentException("vsTestPlatform");
+        if (vsTestCaseFilter == null) throw new NullArgumentException("vsTestCaseFilter");
+        if (testAssemblyPaths == null) throw new NullArgumentException("testAssemblyPaths");
         this.vsTestPlatform = vsTestPlatform;
         this.vsTestCaseFilter = vsTestCaseFilter;
         this.vsTestArgs = vsTestArgs;
@@ -53,15 +53,14 @@ final class DotCoverStepConfig implements Serializable {
     }
 
     public String getVsTestCaseFilter() {
-        return  vsTestCaseFilter;
+        return vsTestCaseFilter;
     }
 
     public String getVsTestArgs() {
         return vsTestArgs;
     }
 
-    public String getTestAssemblyPath()
-    {
+    public String getTestAssemblyPath() {
         return testAssemblyPaths;
     }
 

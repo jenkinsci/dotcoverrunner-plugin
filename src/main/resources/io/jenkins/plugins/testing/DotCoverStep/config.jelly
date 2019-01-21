@@ -1,18 +1,19 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:entry field="vsTestPlatform" title="Platform to target">
-      <select name="vsTestPlatform">
-             <option value="x64">x64</option>
-             <option value="x86">x86</option>
-             <option value="ARM">ARM</option>
-      </select>
+        <select name="vsTestPlatform">
+            <option value="x64">x64</option>
+            <option value="x86">x86</option>
+            <option value="ARM">ARM</option>
+        </select>
     </f:entry>
 
-    <f:entry field="vsTestCaseFilter" title="VSTest test case filter" >
-        <f:textbox default="${descriptor.defaultTestCaseFilter}" />
+    <f:entry field="vsTestCaseFilter" title="VSTest test case filter">
+        <f:textbox default="${descriptor.defaultTestCaseFilter}"/>
     </f:entry>
 
-    <f:entry field="vsTestAssemblyFilter" title="Glob that defines which test assemblies to generata coverage data for.">
+    <f:entry field="vsTestAssemblyFilter"
+             title="Glob that defines which test assemblies to generata coverage data for.">
         <f:textbox/>
     </f:entry>
 
@@ -49,9 +50,8 @@
     </f:entry>
 
     <f:entry field="detailedXMLReportPath" title="Name of the detailed XML coverage report file.">
-          <f:textbox/>
+        <f:textbox/>
     </f:entry>
-
 
 
 </j:jelly>

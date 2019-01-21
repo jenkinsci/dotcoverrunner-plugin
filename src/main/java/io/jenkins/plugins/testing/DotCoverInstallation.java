@@ -25,7 +25,7 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 public class DotCoverInstallation extends ToolInstallation implements NodeSpecific<DotCoverInstallation> {
 
     public static final String DOTCOVERTOOL_DEFAULT_NAME = "Default";
-    public static final String WINDOWS_BINARY_NAME="dotcover.exe";
+    public static final String WINDOWS_BINARY_NAME = "dotcover.exe";
     private static final long serialVersionUID = 4786571647787802473L;
 
     /**
@@ -57,20 +57,6 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         descriptor.save();
     }
 
-    /**
-     * Finds the DotCover tool installation for the given node.
-     * @param node The node to find the tool installation for.
-     * @param log The instance of the tasklistener to use for logging.
-     * @return The DotCover installation associated with the node. Returns the default installation if there are no node-specific matches.
-     * @throws IOException If an IOException occurs.
-     * @throws InterruptedException If an InterruptedException occurs.
-     */
-    @Override
-    public DotCoverInstallation forNode(@Nonnull Node node, TaskListener log) throws IOException, InterruptedException {
-        final String home = translateFor(node, log);
-        return new DotCoverInstallation(getName(), home, Collections.emptyList());
-    }
-
     public static DotCoverInstallation getDefaultInstallation() {
         DotCoverInstallation defaultInstallation;
         DescriptorImpl descriptor = Jenkins.get().getDescriptorByType(DescriptorImpl.class);
@@ -84,6 +70,21 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         return defaultInstallation;
     }
 
+    /**
+     * Finds the DotCover tool installation for the given node.
+     *
+     * @param node The node to find the tool installation for.
+     * @param log  The instance of the tasklistener to use for logging.
+     * @return The DotCover installation associated with the node. Returns the default installation if there are no node-specific matches.
+     * @throws IOException          If an IOException occurs.
+     * @throws InterruptedException If an InterruptedException occurs.
+     */
+    @Override
+    public DotCoverInstallation forNode(@Nonnull Node node, TaskListener log) throws IOException, InterruptedException {
+        final String home = translateFor(node, log);
+        return new DotCoverInstallation(getName(), home, Collections.emptyList());
+    }
+
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
@@ -93,8 +94,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
     @Symbol("dotcovertool")
     public static class DescriptorImpl extends ToolDescriptor<DotCoverInstallation> {
 
-        public DescriptorImpl()
-        {
+        public DescriptorImpl() {
             super();
             load();
         }

@@ -45,6 +45,23 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
     }
 
+    /**
+     * Map workspace to its node or jenkins instance
+     *
+     * @param workspace The workspace to map
+     * @return The node that the workspace is associated with.
+     */
+    private static Node workspaceToNode(@Nonnull FilePath workspace) {
+        Computer computer = workspace.toComputer();
+        Node node = null;
+        if (computer != null) node = computer.getNode();
+        return (node != null) ? node : Jenkins.get();
+    }
+
+    private static boolean isSet(final String s) {
+        return !Strings.isNullOrEmpty(s);
+    }
+
     @Override
     protected DotCoverStep run() throws Exception {
         TaskListener listener = context.get(TaskListener.class);
@@ -57,7 +74,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         String outputDirectoryPath = new File(outputDir.toURI()).getAbsolutePath();
         String tmpDirectoryPath = new File(tmpDir.toURI()).getAbsolutePath();
 
-        String finalSnapshot = new File(outputDir.child("snapshot.cov").toURI()).getAbsolutePath();
+        String finalSnapshot = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
 
         try (PrintStream logger = listener.getLogger()) {
             logger.println("Cleaning output directory: " + outputDir);
@@ -66,24 +83,23 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
 
             for (FilePath assembly : assemblies) {
-                final String assemblyName = assembly.getName();
-                final String snapshotPath = new File(tmpDir.child(assemblyName + ".merge.cov").toURI()).getAbsolutePath();
-                final String configXmlPath = new File(outputDir.child(assemblyName + DotCoverStepConfig.CONFIG_XML_NAME).toURI()).getAbsolutePath();
-                final DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
-                generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath,configXmlPath);
+                String assemblyName = assembly.getName();
+                String snapshotPath = new File(tmpDir.child(assemblyName + DotCoverStepConfig.SNAPSHOT_MERGE_SUFFIX).toURI()).getAbsolutePath();
+                String configXmlPath = new File(outputDir.child(assemblyName + DotCoverStepConfig.CONFIG_XML_NAME).toURI()).getAbsolutePath();
+                DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
+                logger.println("Generating DotCover config xml: " + configXmlPath);
+                generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath, configXmlPath);
+                logger.println("Running DotCover for test assembly:" + assemblyName);
                 launchDotCover("Cover", configXmlPath); // Generate coverage information
             }
 
-            FilePath[] filesToMerge = tmpDir.list("**/*.merge.cov");
-            List<String> paths = new ArrayList<>();
-
-            for (FilePath f : filesToMerge) {
-                paths.add(new File(f.toURI()).getAbsolutePath());
+            FilePath[] snapshotsToMerge = tmpDir.list(DotCoverStepConfig.SNAPSHOT_MERGE_SUFFIX);
+            List<String> snapshotPaths = new ArrayList<>();
+            for (FilePath filePath : snapshotsToMerge) {
+                snapshotPaths.add(new File(filePath.toURI()).getAbsolutePath());
             }
-
-            String merge = String.join(";", paths);
-
-            launchDotCover("merge", "/Source=" + merge, "/Output=" + finalSnapshot);
+            String mergedSnapshotPaths = String.join(";", snapshotPaths);
+            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + finalSnapshot);
 
             if (isSet(dotCoverStep.getHtmlReportPath())) {
                 launchDotCover("Report", "/ReportType=HTML", "/Source=" + finalSnapshot, "/Output=" + htmlReportPath);
@@ -112,11 +128,9 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     private DotCoverStepConfig prepareDotCoverStepConfig(FilePath testAssembly) throws IOException, InterruptedException {
         String assemblyPath = new File(testAssembly.toURI()).getAbsolutePath();
         String assemblies = null;
-        if (isSet(mandatoryExcludedAssemblies))
-        {
+        if (isSet(mandatoryExcludedAssemblies)) {
             assemblies = mandatoryExcludedAssemblies;
-            if (isSet(dotCoverStep.getCoverageExclude()))
-            {
+            if (isSet(dotCoverStep.getCoverageExclude())) {
                 assemblies += ";" + dotCoverStep.getCoverageExclude();
             }
         }
@@ -261,23 +275,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             outputDir.deleteRecursive();
         }
         outputDir.mkdirs();
-    }
-
-    /**
-     * Map workspace to its node or jenkins instance
-     *
-     * @param workspace The workspace to map
-     * @return The node that the workspace is associated with.
-     */
-    private static Node workspaceToNode(@Nonnull FilePath workspace) {
-        Computer computer = workspace.toComputer();
-        Node node = null;
-        if (computer != null) node = computer.getNode();
-        return (node != null) ? node : Jenkins.get();
-    }
-
-    private static boolean isSet(final String s) {
-        return !Strings.isNullOrEmpty(s);
     }
 
 }
