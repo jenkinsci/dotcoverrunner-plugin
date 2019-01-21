@@ -43,30 +43,51 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     @Override
     protected DotCoverStep run() throws Exception {
         TaskListener listener = context.get(TaskListener.class);
+        FilePath tmpDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR, "tmp");
+        FilePath outputDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
+
+        String htmlReportPath = new File(outputDir.child(DotCoverStepConfig.HTML_REPORT_NAME).toURI()).getAbsolutePath();
+        String nDependReportPath = new File(outputDir.child(DotCoverStepConfig.NDEPEND_XML_REPORT_NAME).toURI()).getAbsolutePath();
+        String detailedReportPath = new File(outputDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
+
+        String finalSnapshot = new File(outputDir.child("snapshot.cov").toURI()).getAbsolutePath();
+
+        cleanOutputDirectory(outputDir);
+
         try (PrintStream logger = listener.getLogger()) {
 
             FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
 
-
-            logger.println("Ensuring this is an empty work directory: " + Paths.get(DotCoverStepConfig.OUTPUT_DIR_NAME).toAbsolutePath());
-            cleanWorkingDirectory();
-
-            DotCoverStepConfig config = prepareDotCoverStepConfig(listener, assemblies[0]);
-            logger.println("Writing DotCover xml configuration file to " + config.getDotCoverConfigXmlPath());
-            generateDotCoverConfigXml(config);
-
-            logger.println("Generating code coverage data in " + config.getDotCoverSnapshotPath());
-            launchDotCover("Cover", config.getDotCoverConfigXmlPath()); // Generate coverage information
-
-            if (isSet(config.getHTMLReportPath())) {
-                launchDotCover("Report", "/ReportType=HTML", "/Source=" + config.getDotCoverSnapshotPath(), "/Output=" + config.getHTMLReportPath());
-                relaxJavaScriptSecurity(config.getHTMLReportPath());
+            for (FilePath assembly : assemblies) {
+                DotCoverStepConfig config = prepareDotCoverStepConfig(listener, assembly);
+                String snapshotPath = new File(tmpDir.child(assembly.getName() + ".merge.cov").toURI()).getAbsolutePath();
+                generateDotCoverConfigXml(config, snapshotPath);
+                launchDotCover("Cover", snapshotPath); // Generate coverage information
             }
 
+            FilePath[] filesToMerge = tmpDir.list("**/*.merge.cov");
+            List<String> paths = new ArrayList<>();
 
-            launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + config.getDotCoverSnapshotPath(), "/Output=" + config.getNDependXmlReportPath());
+            for (FilePath f : filesToMerge)
+            {
+                paths.add(new File(f.toURI()).getAbsolutePath());
+            }
 
-            launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + config.getDotCoverSnapshotPath(), "/Output=" + config.getDetailedXmlReportPath());
+            String merge = String.join(";", paths);
+
+            launchDotCover("merge", "/Source=" + merge, "/Output=" + finalSnapshot);
+
+            if (isSet(dotCoverStep.getHtmlReportPath())) {
+                launchDotCover("Report", "/ReportType=HTML", "/Source=" + finalSnapshot, "/Output=" + htmlReportPath);
+                relaxJavaScriptSecurity(htmlReportPath);
+            }
+
+            if (isSet(dotCoverStep.getNDependXmlReportPath()))
+            {
+                launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + finalSnapshot, "/Output=" + nDependReportPath);
+            }
+
+            launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + finalSnapshot, "/Output=" + detailedReportPath);
         }
         return dotCoverStep;
     }
@@ -119,7 +140,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         return new File(solutionFiles[0].toURI()).getAbsolutePath();
     }
 
-    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig) throws IOException, InterruptedException {
+    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath) throws IOException, InterruptedException {
         StringBuilder vsTestArgs = new StringBuilder();
         vsTestArgs.append("/platform:");
         vsTestArgs.append(dotCoverStepConfig.getVsTestPlatform());
@@ -155,8 +176,8 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         Element tempDir = analyseParams.addElement("TempDir");
         tempDir.addText(dotCoverStepConfig.getTempDirectory());
 
-        Element output = analyseParams.addElement("Output");
-        output.addText(dotCoverStepConfig.getDotCoverSnapshotPath());
+        Element output = analyseParams.addElement("Output"); // Path to snapshot (.cov) file.
+        output.addText(snapshotPath);
 
         Element filters = analyseParams.addElement("Filters");
 
@@ -211,7 +232,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             }
         }
 
-        try (OutputStream out = new FilePath(new File(dotCoverStepConfig.getDotCoverConfigXmlPath())).write()) {
+        try (OutputStream out = new FilePath(new File(snapshotPath)).write()) {
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(out, format);
             writer.write(document);
@@ -252,13 +273,11 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
     }
 
-    private void cleanWorkingDirectory() throws IOException, InterruptedException {
-        FilePath workDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
-        if (workDir.exists()) {
-            workDir.deleteRecursive();
+    private void cleanOutputDirectory(FilePath outputDir) throws IOException, InterruptedException {
+        if (outputDir.exists()) {
+            outputDir.deleteRecursive();
         }
-
-        workDir.mkdirs();
+        outputDir.mkdirs();
     }
 
     /**
