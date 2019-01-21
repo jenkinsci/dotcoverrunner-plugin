@@ -21,8 +21,6 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final String APP_NAME = "dotcover";
 
-
-
     private String vsTestPlatform;
     private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;
@@ -36,6 +34,7 @@ public class DotCoverStep extends Step implements Serializable {
     private String solutionDir;
     private String processInclude;
     private String processExclude;
+    private String detailedXMLReportPath;
 
     @DataBoundConstructor
     public DotCoverStep() {
@@ -172,6 +171,15 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setProcessExclude(String processExclude) {
         this.processExclude = processExclude;
+    }
+
+    public String getDetailedXMLReportPath() {
+        return detailedXMLReportPath;
+    }
+
+    @DataBoundSetter @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
+    public void setDetailedXMLReportPath(String detailedXMLReportPath) {
+        this.detailedXMLReportPath = detailedXMLReportPath;
     }
 
     @Extension

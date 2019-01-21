@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 final class DotCoverStepConfig implements Serializable {
 
-    public static final String DOTCOVER_TEMP_DIR = "dotcover-work";
+    public static final String DOTCOVER_TEMP_DIR_NAME = "dotcover-work";
     public static final String HTML_REPORT_NAME = "index.html";
     public static final String NDEPEND_XML_REPORT_NAME="NDependCoverage.xml";
     public static final String DETAILED_XML_REPORT_NAME="DetailedCoverage.xml";
@@ -20,36 +20,29 @@ final class DotCoverStepConfig implements Serializable {
     private final String vsTestPlatform;
     private final String vsTestCaseFilter;
     private final String vsTestArgs;
-    private final String solutionFilePath;
     private final String testAssemblyPaths;
-    private final String outputDirectory;
     private final String processInclude;
     private final String coverageInclude;
     private final String coverageClassInclude;
     private final String coverageFunctionInclude;
     private final String coverageAssemblyExclude;
-    private final String tempDirectory;
     private final String processExclude;
     private final String vsTestPath;
 
-    DotCoverStepConfig(String solutionFilePath, String tempDirectory, String outputDirectory, String dotCoverSnapshotPath, String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
+    DotCoverStepConfig(String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
     {
-        if (dotCoverSnapshotPath == null) throw new NullArgumentException("dotCoverSnapshotPath");
         if (vsTestPlatform == null) throw  new NullArgumentException("vsTestPlatform");
         if (vsTestCaseFilter == null) throw  new NullArgumentException("vsTestCaseFilter");
         if (testAssemblyPaths == null) throw  new NullArgumentException("testAssemblyPaths");
         this.vsTestPlatform = vsTestPlatform;
         this.vsTestCaseFilter = vsTestCaseFilter;
         this.vsTestArgs = vsTestArgs;
-        this.solutionFilePath = solutionFilePath;
-        this.outputDirectory = outputDirectory;
         this.processInclude = processInclude;
         this.testAssemblyPaths = testAssemblyPaths;
         this.coverageInclude = coverageInclude;
         this.coverageClassInclude = coverageClassInclude;
         this.coverageFunctionInclude = coverageFunctionInclude;
         this.coverageAssemblyExclude = coverageAssemblyExclude;
-        this.tempDirectory = tempDirectory;
         this.processExclude = processExclude;
         this.vsTestPath = vsTestPath;
     }
@@ -66,18 +59,9 @@ final class DotCoverStepConfig implements Serializable {
         return vsTestArgs;
     }
 
-    public String getSolutionFilePath()
-    {
-        return solutionFilePath;
-    }
-
     public String getTestAssemblyPath()
     {
         return testAssemblyPaths;
-    }
-
-    public String getOutputDirectory() {
-        return outputDirectory;
     }
 
     public String getProcessInclude() {
@@ -98,11 +82,6 @@ final class DotCoverStepConfig implements Serializable {
 
     public String getCoverageAssemblyExclude() {
         return coverageAssemblyExclude;
-    }
-
-    public String getTempDirectory()
-    {
-        return tempDirectory;
     }
 
     public String getProcessExclude() {

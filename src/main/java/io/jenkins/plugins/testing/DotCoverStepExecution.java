@@ -32,23 +32,30 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     private final StepContext context;
     private final DotCoverStep dotCoverStep;
     private final FilePath workspace;
+    private final String vsTestToolPath;
+    private final String mandatoryExcludedAssemblies;
 
     public DotCoverStepExecution(StepContext context, DotCoverStep dotCoverStep) throws IOException, InterruptedException {
         super(context);
         this.context = context;
         this.workspace = context.get(FilePath.class);
         this.dotCoverStep = dotCoverStep;
+        Node node = workspaceToNode(workspace);
+        this.vsTestToolPath = new File(VsTestInstallation.getDefaultInstallation().forNode(node, context.get(TaskListener.class)).getHome()).getAbsolutePath();
+        mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
     }
 
     @Override
     protected DotCoverStep run() throws Exception {
         TaskListener listener = context.get(TaskListener.class);
-        FilePath tmpDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR, "tmp");
+        FilePath tmpDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR_NAME, "tmp");
         FilePath outputDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
 
         String htmlReportPath = new File(outputDir.child(DotCoverStepConfig.HTML_REPORT_NAME).toURI()).getAbsolutePath();
         String nDependReportPath = new File(outputDir.child(DotCoverStepConfig.NDEPEND_XML_REPORT_NAME).toURI()).getAbsolutePath();
         String detailedReportPath = new File(outputDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
+        String outputDirectoryPath = new File(outputDir.toURI()).getAbsolutePath();
+        String tmpDirectoryPath = new File(tmpDir.toURI()).getAbsolutePath();
 
         String finalSnapshot = new File(outputDir.child("snapshot.cov").toURI()).getAbsolutePath();
 
@@ -59,17 +66,16 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
 
             for (FilePath assembly : assemblies) {
-                DotCoverStepConfig config = prepareDotCoverStepConfig(listener, assembly);
+                DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
                 String snapshotPath = new File(tmpDir.child(assembly.getName() + ".merge.cov").toURI()).getAbsolutePath();
-                generateDotCoverConfigXml(config, snapshotPath);
+                generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath);
                 launchDotCover("Cover", snapshotPath); // Generate coverage information
             }
 
             FilePath[] filesToMerge = tmpDir.list("**/*.merge.cov");
             List<String> paths = new ArrayList<>();
 
-            for (FilePath f : filesToMerge)
-            {
+            for (FilePath f : filesToMerge) {
                 paths.add(new File(f.toURI()).getAbsolutePath());
             }
 
@@ -82,12 +88,13 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
                 relaxJavaScriptSecurity(htmlReportPath);
             }
 
-            if (isSet(dotCoverStep.getNDependXmlReportPath()))
-            {
+            if (isSet(dotCoverStep.getNDependXmlReportPath())) {
                 launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + finalSnapshot, "/Output=" + nDependReportPath);
             }
 
-            launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + finalSnapshot, "/Output=" + detailedReportPath);
+            if (isSet(dotCoverStep.getDetailedXMLReportPath())) {
+                launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + finalSnapshot, "/Output=" + detailedReportPath);
+            }
         }
         return dotCoverStep;
     }
@@ -100,42 +107,15 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         Files.write(report, content.getBytes());
     }
 
-    private DotCoverStepConfig prepareDotCoverStepConfig(TaskListener listener, FilePath testAssembly) throws IOException, InterruptedException {
-        String testAssemblies = new File(testAssembly.toURI()).getAbsolutePath();
-
-        String solutionFilePath = null;
-
-        if (!isSet(dotCoverStep.getGetSolutionDir())) {
-            solutionFilePath = inferSolutionFilePathOrDie();
-        }
-
-        Node node = workspaceToNode(workspace);
-        String vsTestToolPath = new File(VsTestInstallation.getDefaultInstallation().forNode(node, listener).getHome()).getAbsolutePath();
-
-        FilePath tempDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR, "tmp");
-        String tempDirPath = new File(tempDir.toURI()).getAbsolutePath();
-        String dotCoverSnapshotPath = new File(tempDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
-
-        FilePath outputDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
-        String outputDirPath = new File(outputDir.toURI()).getAbsolutePath();
-
-        String mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
+    private DotCoverStepConfig prepareDotCoverStepConfig(FilePath testAssembly) throws IOException, InterruptedException {
+        String assemblyPath = new File(testAssembly.toURI()).getAbsolutePath();
 
         String assembliesToExclude = (isSet(mandatoryExcludedAssemblies)) ? dotCoverStep.getCoverageExclude() + ";" + mandatoryExcludedAssemblies : dotCoverStep.getCoverageExclude();
 
-        return new DotCoverStepConfig(solutionFilePath, tempDirPath, outputDirPath, dotCoverSnapshotPath, vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), testAssemblies, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
+        return new DotCoverStepConfig(vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), assemblyPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
     }
 
-    private String inferSolutionFilePathOrDie() throws IOException, InterruptedException {
-        FilePath[] solutionFiles = workspace.list("**/*.sln");
-        if (solutionFiles.length != 1) // TODO check for nulls before returning zero-index, check for zero solution files.
-        {
-            throw new IllegalStateException("More than one solution (.sln) file present. You need to specify which one you want via the solutiondir attribute.");
-        }
-        return new File(solutionFiles[0].toURI()).getAbsolutePath();
-    }
-
-    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath) throws IOException, InterruptedException {
+    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir) throws IOException, InterruptedException {
         StringBuilder vsTestArgs = new StringBuilder();
         vsTestArgs.append("/platform:");
         vsTestArgs.append(dotCoverStepConfig.getVsTestPlatform());
@@ -166,10 +146,10 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         targetArguments.addText(vsTestArgs.toString());
 
         Element targetWorkingDir = analyseParams.addElement("TargetWorkingDir");
-        targetWorkingDir.addText(dotCoverStepConfig.getOutputDirectory());
+        targetWorkingDir.addText(outputDirectory);
 
         Element tempDir = analyseParams.addElement("TempDir");
-        tempDir.addText(dotCoverStepConfig.getTempDirectory());
+        tempDir.addText(tmpDir);
 
         Element output = analyseParams.addElement("Output"); // Path to snapshot (.cov) file.
         output.addText(snapshotPath);
