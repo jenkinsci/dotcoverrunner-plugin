@@ -248,17 +248,17 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     public void launchDotCover(String... arguments) throws IOException, InterruptedException {
-        final TaskListener listener = context.get(TaskListener.class);
+        TaskListener listener = context.get(TaskListener.class);
         PrintStream logger = listener.getLogger();
-        final FilePath workspace = context.get(FilePath.class);
-        final Node node = workspaceToNode(workspace);
-        final DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
+        FilePath workspace = context.get(FilePath.class);
+        Node node = workspaceToNode(workspace);
+        DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
 
         ArgumentListBuilder builder = new ArgumentListBuilder();
         builder.addQuoted(dotCover.getHome());
         builder.add(arguments);
 
-        final int exitCode = workspace.createLauncher(listener)
+        int exitCode = workspace.createLauncher(listener)
                 .launch()
                 .cmds(builder)
                 .stdout(logger)
