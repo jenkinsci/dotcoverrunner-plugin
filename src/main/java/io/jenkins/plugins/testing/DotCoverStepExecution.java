@@ -66,10 +66,12 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
 
             for (FilePath assembly : assemblies) {
+                final String assemblyName = assembly.getName();
+                final String snapshotPath = new File(tmpDir.child(assemblyName + ".merge.cov").toURI()).getAbsolutePath();
+                final String configXmlPath = new File(outputDir.child(assemblyName + DotCoverStepConfig.CONFIG_XML_NAME).toURI()).getAbsolutePath();
                 DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
-                String snapshotPath = new File(tmpDir.child(assembly.getName() + ".merge.cov").toURI()).getAbsolutePath();
-                generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath);
-                launchDotCover("Cover", snapshotPath); // Generate coverage information
+                generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath,configXmlPath);
+                launchDotCover("Cover", configXmlPath); // Generate coverage information
             }
 
             FilePath[] filesToMerge = tmpDir.list("**/*.merge.cov");
@@ -109,13 +111,19 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
     private DotCoverStepConfig prepareDotCoverStepConfig(FilePath testAssembly) throws IOException, InterruptedException {
         String assemblyPath = new File(testAssembly.toURI()).getAbsolutePath();
-
-        String assembliesToExclude = (isSet(mandatoryExcludedAssemblies)) ? dotCoverStep.getCoverageExclude() + ";" + mandatoryExcludedAssemblies : dotCoverStep.getCoverageExclude();
-
-        return new DotCoverStepConfig(vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), assemblyPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assembliesToExclude, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
+        String assemblies = null;
+        if (isSet(mandatoryExcludedAssemblies))
+        {
+            assemblies = mandatoryExcludedAssemblies;
+            if (isSet(dotCoverStep.getCoverageExclude()))
+            {
+                assemblies += ";" + dotCoverStep.getCoverageExclude();
+            }
+        }
+        return new DotCoverStepConfig(vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), assemblyPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assemblies, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
     }
 
-    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir) throws IOException, InterruptedException {
+    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir, String configXmlPath) throws IOException, InterruptedException {
         StringBuilder vsTestArgs = new StringBuilder();
         vsTestArgs.append("/platform:");
         vsTestArgs.append(dotCoverStepConfig.getVsTestPlatform());
@@ -207,7 +215,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             }
         }
 
-        try (OutputStream out = new FilePath(new File(snapshotPath)).write()) {
+        try (OutputStream out = new FilePath(new File(configXmlPath)).write()) {
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(out, format);
             writer.write(document);

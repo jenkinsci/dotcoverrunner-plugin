@@ -8,7 +8,9 @@
       </select>
     </f:entry>
 
-
+    <f:entry field="htmlReportPath" title="Filename of HTML report">
+        <f:textbox/>
+    </f:entry>
 
     <f:entry field="vsTestArgs" title="VsTest additional arguments">
         <f:textbox/>
