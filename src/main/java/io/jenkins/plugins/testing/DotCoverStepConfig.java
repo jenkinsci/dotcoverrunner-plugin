@@ -27,7 +27,7 @@ final class DotCoverStepConfig implements Serializable {
     private final String vsTestCaseFilter;
     private final String vsTestArgs;
     private final String solutionFilePath;
-    private final List<String> testAssemblyPaths;
+    private final String testAssemblyPaths;
     private final String outputDirectory;
     private final String processInclude;
     private final String coverageInclude;
@@ -40,7 +40,7 @@ final class DotCoverStepConfig implements Serializable {
     private final String vsTestPath;
 
 
-    DotCoverStepConfig(String solutionFilePath, String tempDirectory, String outputDirectory, String dotCoverConfigXmlPath, String dotCoverSnapshotPath, String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, List<String> testAssemblyPaths, String htmlReportPath, String nDependReportPath, String detailedXmlReportPath, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
+    DotCoverStepConfig(String solutionFilePath, String tempDirectory, String outputDirectory, String dotCoverConfigXmlPath, String dotCoverSnapshotPath, String vsTestPath, String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String htmlReportPath, String nDependReportPath, String detailedXmlReportPath, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude)
     {
         if (dotCoverSnapshotPath == null) throw new NullArgumentException("dotCoverSnapshotPath");
         if (htmlReportPath == null) throw new NullArgumentException("htmlReportPath");
@@ -104,7 +104,7 @@ final class DotCoverStepConfig implements Serializable {
         return solutionFilePath;
     }
 
-    public List<String> getTestAssemblyPaths()
+    public String getTestAssemblyPath()
     {
         return testAssemblyPaths;
     }

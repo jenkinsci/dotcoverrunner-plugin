@@ -44,10 +44,14 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     protected DotCoverStep run() throws Exception {
         TaskListener listener = context.get(TaskListener.class);
         try (PrintStream logger = listener.getLogger()) {
+
+            FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
+
+
             logger.println("Ensuring this is an empty work directory: " + Paths.get(DotCoverStepConfig.OUTPUT_DIR_NAME).toAbsolutePath());
             cleanWorkingDirectory();
 
-            DotCoverStepConfig config = prepareDotCoverStepConfig(listener);
+            DotCoverStepConfig config = prepareDotCoverStepConfig(listener, assemblies[0]);
             logger.println("Writing DotCover xml configuration file to " + config.getDotCoverConfigXmlPath());
             generateDotCoverConfigXml(config);
 
@@ -75,15 +79,8 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         Files.write(report, content.getBytes());
     }
 
-    private DotCoverStepConfig prepareDotCoverStepConfig(TaskListener listener) throws IOException, InterruptedException {
-
-
-        FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
-        List<String> testAssemblies = new ArrayList<>();
-        for (FilePath assemblyPath : assemblies) {
-            String absolutePath = new File(assemblyPath.absolutize().toURI()).toString();
-            testAssemblies.add(absolutePath);
-        }
+    private DotCoverStepConfig prepareDotCoverStepConfig(TaskListener listener, FilePath testAssembly) throws IOException, InterruptedException {
+        String testAssemblies = new File(testAssembly.toURI()).getAbsolutePath();
 
         String solutionFilePath = null;
 
@@ -130,10 +127,8 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         vsTestArgs.append("/logger:trx");
         vsTestArgs.append(' ');
 
-        for (String assembly : dotCoverStepConfig.getTestAssemblyPaths()) {
-            vsTestArgs.append(assembly);
-            vsTestArgs.append(' ');
-        }
+        vsTestArgs.append(dotCoverStepConfig.getTestAssemblyPath());
+        vsTestArgs.append(' ');
 
         if (isSet(dotCoverStepConfig.getVsTestCaseFilter())) {
             vsTestArgs.append("/testCaseFilter:");
