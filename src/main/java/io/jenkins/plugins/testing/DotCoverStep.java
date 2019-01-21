@@ -22,22 +22,22 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final long serialVersionUID = 1180920115994863516L;
 
-    private static final String APP_NAME = "dotcover";
+    private static final String JENKINS_FUNCTION_NAME = "dotcover";
 
     private String vsTestPlatform;
     private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;
     private String vsTestArgs;
+    private String htmlReportPath;
+    private String nDependXmlReportPath;
+    private String detailedXMLReportPath;
     private String coverageInclude;
     private String coverageClassInclude;
     private String coverageFunctionInclude;
     private String coverageExclude;
-    private String htmlReportPath;
-    private String nDependXmlReportPath;
-    private String solutionDir;
     private String processInclude;
     private String processExclude;
-    private String detailedXMLReportPath;
+    private String solutionDir;
 
     @DataBoundConstructor
     public DotCoverStep() {
@@ -193,7 +193,7 @@ public class DotCoverStep extends Step implements Serializable {
 
         @Override
         public String getFunctionName() {
-            return APP_NAME;
+            return JENKINS_FUNCTION_NAME;
         }
 
         @Override

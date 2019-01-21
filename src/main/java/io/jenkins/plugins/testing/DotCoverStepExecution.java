@@ -69,7 +69,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
                 final String assemblyName = assembly.getName();
                 final String snapshotPath = new File(tmpDir.child(assemblyName + ".merge.cov").toURI()).getAbsolutePath();
                 final String configXmlPath = new File(outputDir.child(assemblyName + DotCoverStepConfig.CONFIG_XML_NAME).toURI()).getAbsolutePath();
-                DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
+                final DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
                 generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath,configXmlPath);
                 launchDotCover("Cover", configXmlPath); // Generate coverage information
             }
@@ -102,8 +102,8 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private void relaxJavaScriptSecurity(String htmlReportPath) throws IOException {
-        final Path report = Paths.get(htmlReportPath);
-        final Charset utf8 = StandardCharsets.UTF_8;
+        Path report = Paths.get(htmlReportPath);
+        Charset utf8 = StandardCharsets.UTF_8;
         String content = new String(Files.readAllBytes(report), utf8);
         content = content.replaceAll(DotCoverStepConfig.IFRAME_NO_JAVASCRIPT, DotCoverStepConfig.IFRAME_ALLOW_JAVASCRIPT);
         Files.write(report, content.getBytes());

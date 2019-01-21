@@ -8,20 +8,50 @@
       </select>
     </f:entry>
 
-    <f:entry field="htmlReportPath" title="Filename of HTML report">
+    <f:entry field="vsTestCaseFilter" title="VSTest test case filter" >
+        <f:textbox default="${descriptor.defaultTestCaseFilter}" />
+    </f:entry>
+
+    <f:entry field="vsTestAssemblyFilter" title="Glob that defines which test assemblies to generata coverage data for.">
         <f:textbox/>
     </f:entry>
 
-    <f:entry field="vsTestArgs" title="VsTest additional arguments">
+    <f:entry field="vsTestArgs" title="Additional VSTest arguments to pass through.">
         <f:textbox/>
     </f:entry>
 
-    <f:entry field="vsTestAssemblyFilter" title="Test assembly filter">
+    <f:entry field="coverageInclude" title="Semicolon-separated list of assemblies to include in the coverage.">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="coverageClassInclude" title="Semicolon-separated list of classes to include in the coverage.">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="coverageFunctionInclude" title="Semicolon-separated list of methods to include in the coverage">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="processInclude" title="Semicolon-separated list processes to regard as part of the coverage run.">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="processExclude" title="Semicolon-separated list processes to disregard in the coverage run.">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="htmlReportPath" title="Name of the HTML coverage report file.">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="nDependXmlReportPath" title="Name of the nDepend XML coverage report file.">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry field="detailedXMLReportPath" title="Name of the detailed XML coverage report file.">
           <f:textbox/>
     </f:entry>
 
-    <f:entry field="vsTestCaseFilter" title="VSTest test case filter" >
-          <f:textbox default="${descriptor.defaultTestCaseFilter}" />
-    </f:entry>
+
 
 </j:jelly>
