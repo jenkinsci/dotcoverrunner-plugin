@@ -32,7 +32,6 @@ final class DotCoverStepConfig implements Serializable {
 
     DotCoverStepConfig(String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude) {
         if (vsTestPlatform == null) throw new NullArgumentException("vsTestPlatform");
-        if (vsTestCaseFilter == null) throw new NullArgumentException("vsTestCaseFilter");
         if (testAssemblyPaths == null) throw new NullArgumentException("testAssemblyPaths");
         this.vsTestPlatform = vsTestPlatform;
         this.vsTestCaseFilter = vsTestCaseFilter;

@@ -26,7 +26,7 @@ public class DotCoverStep extends Step implements Serializable {
     private static final String JENKINS_FUNCTION_NAME = "dotcover";
 
     private String vsTestPlatform; // default defined in config.jelly.
-    private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
+    private String vsTestCaseFilter;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;
     private String vsTestArgs;
     private String coverageInclude;
@@ -51,7 +51,6 @@ public class DotCoverStep extends Step implements Serializable {
     @Extension
     public static class DescriptorImpl extends StepDescriptor {
 
-        public static final String DEFAULT_VSTESTCASEFILTER = "**Test*";
         public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
 
         @Override
