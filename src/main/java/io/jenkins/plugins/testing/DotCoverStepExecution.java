@@ -1,6 +1,7 @@
 package io.jenkins.plugins.testing;
 
 import com.google.common.base.Strings;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Node;
@@ -26,22 +27,31 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents one execution of a @{@link DotCoverStep} in a @{@link hudson.model.Run}.
+ */
 public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecution<DotCoverStep> implements Serializable {
 
     private static final long serialVersionUID = -1431093121789817171L;
     private final StepContext context;
     private final DotCoverStep dotCoverStep;
     private final FilePath workspace;
-    private final String vsTestToolPath;
+    //    private final String vsTestToolPath;
     private final String mandatoryExcludedAssemblies;
 
+    /**
+     * Default constructor. Normally invoked by @{@link DotCoverStep}
+     *
+     * @param context      The context of this execution.
+     * @param dotCoverStep The step that created this execution.
+     * @throws IOException          If an IO error occured.
+     * @throws InterruptedException If the thread was interrupted, which typically happens if the @{@link hudson.model.Run} is cancelled.
+     */
     public DotCoverStepExecution(StepContext context, DotCoverStep dotCoverStep) throws IOException, InterruptedException {
         super(context);
         this.context = context;
         this.workspace = context.get(FilePath.class);
         this.dotCoverStep = dotCoverStep;
-        Node node = workspaceToNode(workspace);
-        this.vsTestToolPath = new File(VsTestInstallation.getDefaultInstallation().forNode(node, context.get(TaskListener.class)).getHome()).getAbsolutePath();
         mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
     }
 
@@ -57,7 +67,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         String outputDirectoryPath = new File(outputDir.toURI()).getAbsolutePath();
         String tmpDirectoryPath = new File(tmpDir.toURI()).getAbsolutePath();
 
-        String finalSnapshot = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
+        String combinedSnapshot = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
 
         try (PrintStream logger = listener.getLogger()) {
             logger.println("Cleaning output directory: " + outputDir);
@@ -76,25 +86,26 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
                 launchDotCover("Cover", configXmlPath); // Generate coverage information
             }
 
-            FilePath[] snapshotsToMerge = tmpDir.list(DotCoverStepConfig.SNAPSHOT_MERGE_SUFFIX);
+            FilePath[] snapshotsToMerge = tmpDir.list("**/*" + DotCoverStepConfig.SNAPSHOT_MERGE_SUFFIX);
+
             List<String> snapshotPaths = new ArrayList<>();
             for (FilePath filePath : snapshotsToMerge) {
                 snapshotPaths.add(new File(filePath.toURI()).getAbsolutePath());
             }
             String mergedSnapshotPaths = String.join(";", snapshotPaths);
-            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + finalSnapshot);
+            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + combinedSnapshot);
 
             if (isSet(dotCoverStep.getHtmlReportPath())) {
-                launchDotCover("Report", "/ReportType=HTML", "/Source=" + finalSnapshot, "/Output=" + htmlReportPath);
+                launchDotCover("Report", "/ReportType=HTML", "/Source=" + combinedSnapshot, "/Output=" + htmlReportPath);
                 relaxJavaScriptSecurity(htmlReportPath);
             }
 
             if (isSet(dotCoverStep.getNDependXmlReportPath())) {
-                launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + finalSnapshot, "/Output=" + nDependReportPath);
+                launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + combinedSnapshot, "/Output=" + nDependReportPath);
             }
 
             if (isSet(dotCoverStep.getDetailedXMLReportPath())) {
-                launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + finalSnapshot, "/Output=" + detailedReportPath);
+                launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + combinedSnapshot, "/Output=" + detailedReportPath);
             }
         }
         return dotCoverStep;
@@ -117,7 +128,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
                 assemblies += ";" + dotCoverStep.getCoverageExclude();
             }
         }
-        return new DotCoverStepConfig(vsTestToolPath, dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), assemblyPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assemblies, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
+        return new DotCoverStepConfig(dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), assemblyPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assemblies, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
     }
 
     private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir, String configXmlPath) throws IOException, InterruptedException {
@@ -145,7 +156,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         Element analyseParams = document.addElement("AnalyseParams");
 
         Element targetExecutable = analyseParams.addElement("TargetExecutable");
-        targetExecutable.addText(dotCoverStepConfig.getVsTestPath());
+        targetExecutable.addText(getVsTestToolPath());
 
         Element targetArguments = analyseParams.addElement("TargetArguments");
         targetArguments.addText(vsTestArgs.toString());
@@ -234,6 +245,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         TaskListener listener = context.get(TaskListener.class);
         PrintStream logger = listener.getLogger();
         FilePath workspace = context.get(FilePath.class);
+        EnvVars envVars = getContext().get(EnvVars.class);
         Node node = workspaceToNode(workspace);
         DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
 
@@ -244,7 +256,10 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         int exitCode = workspace.createLauncher(listener)
                 .launch()
                 .cmds(builder)
+                .envs(envVars)
                 .stdout(logger)
+                .stderr(logger)
+                .pwd(workspace)
                 .start()
                 .join();
 
@@ -271,6 +286,23 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         Node node = null;
         if (computer != null) node = computer.getNode();
         return (node != null) ? node : Jenkins.get();
+    }
+
+    private String getVsTestToolPath() throws IOException, InterruptedException {
+        EnvVars envVars = getContext().get(EnvVars.class);
+        TaskListener listener = getContext().get(TaskListener.class);
+        Node node = workspaceToNode(workspace);
+        VsTestInstallation installation = VsTestInstallation.getDefaultInstallation();
+
+        if (envVars != null) {
+            return installation.forEnvironment(envVars).getVsTestExe();
+        }
+
+        if (node != null) {
+            return installation.forNode(node, listener).getVsTestExe();
+        }
+
+        return installation.getVsTestExe();
     }
 
     private static boolean isSet(final String s) {

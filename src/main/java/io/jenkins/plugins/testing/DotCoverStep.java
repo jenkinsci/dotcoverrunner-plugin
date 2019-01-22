@@ -67,7 +67,7 @@ public class DotCoverStep extends Step implements Serializable {
 
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
-            final Set<Class<?>> contexts = new HashSet<>();
+            Set<Class<?>> contexts = new HashSet<>();
             contexts.add(TaskListener.class);
             contexts.add(Launcher.class);
             contexts.add(FilePath.class);

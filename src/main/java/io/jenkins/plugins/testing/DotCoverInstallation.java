@@ -1,7 +1,9 @@
 package io.jenkins.plugins.testing;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.init.Initializer;
+import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
@@ -20,9 +22,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
+import static java.util.Collections.emptyList;
 
 @SuppressWarnings({"unused", "SpellCheckingInspection"}) // Instantiated by Jenkins
-public class DotCoverInstallation extends ToolInstallation implements NodeSpecific<DotCoverInstallation> {
+public class DotCoverInstallation extends ToolInstallation implements NodeSpecific<DotCoverInstallation>, EnvironmentSpecific<DotCoverInstallation> {
 
     public static final String DOTCOVERTOOL_DEFAULT_NAME = "Default";
     public static final String WINDOWS_BINARY_NAME = "dotcover.exe";
@@ -41,8 +44,9 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         super(name, home, properties);
     }
 
+
     /**
-     * This method is run every time Jenkins is started. It makes sure there is a least one tool installation, creating a default installation if none exists.
+     * This method is run every time Jenkins is started. It ensures there is a least one tool installation, creating a default installation if none exists.
      */
     @Initializer(after = EXTENSIONS_AUGMENTED)
     public static void onLoaded() {
@@ -52,7 +56,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
             return;
         }
 
-        DotCoverInstallation installation = new DotCoverInstallation(DOTCOVERTOOL_DEFAULT_NAME, "dotcover.exe", Collections.emptyList());
+        DotCoverInstallation installation = new DotCoverInstallation(DOTCOVERTOOL_DEFAULT_NAME, "dotcover.exe", emptyList());
         descriptor.setInstallations(installation);
         descriptor.save();
     }
@@ -82,12 +86,18 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
     @Override
     public DotCoverInstallation forNode(@Nonnull Node node, TaskListener log) throws IOException, InterruptedException {
         String home = translateFor(node, log);
-        return new DotCoverInstallation(getName(), home, Collections.emptyList());
+        return new DotCoverInstallation(getName(), home, emptyList());
     }
 
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
+    }
+
+    @Override
+    public DotCoverInstallation forEnvironment(EnvVars environment) {
+        String expandedHome = environment.expand(getHome());
+        return new DotCoverInstallation(getName(), expandedHome, Collections.emptyList());
     }
 
     @Extension
