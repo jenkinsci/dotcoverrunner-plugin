@@ -22,7 +22,7 @@ final class DotCoverStepConfig implements Serializable {
     private final String vsTestPlatform;
     private final String vsTestCaseFilter;
     private final String vsTestArgs;
-    private final String testAssemblyPaths;
+    private final String testAssemblyPath;
     private final String processInclude;
     private final String coverageInclude;
     private final String coverageClassInclude;
@@ -32,12 +32,12 @@ final class DotCoverStepConfig implements Serializable {
 
     DotCoverStepConfig(String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, String testAssemblyPaths, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude) {
         if (vsTestPlatform == null) throw new NullArgumentException("vsTestPlatform");
-        if (testAssemblyPaths == null) throw new NullArgumentException("testAssemblyPaths");
+        if (testAssemblyPaths == null) throw new NullArgumentException("testAssemblyPath");
         this.vsTestPlatform = vsTestPlatform;
         this.vsTestCaseFilter = vsTestCaseFilter;
         this.vsTestArgs = vsTestArgs;
         this.processInclude = processInclude;
-        this.testAssemblyPaths = testAssemblyPaths;
+        this.testAssemblyPath = testAssemblyPaths;
         this.coverageInclude = coverageInclude;
         this.coverageClassInclude = coverageClassInclude;
         this.coverageFunctionInclude = coverageFunctionInclude;
@@ -58,7 +58,7 @@ final class DotCoverStepConfig implements Serializable {
     }
 
     public String getTestAssemblyPath() {
-        return testAssemblyPaths;
+        return testAssemblyPath;
     }
 
     public String getProcessInclude() {
