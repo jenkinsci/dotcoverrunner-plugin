@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry field="vsTestPlatform" title="Platform to target">
+    <f:entry field="vsTestPlatform" title="Target platform">
         <select name="vsTestPlatform">
             <option value="x64">x64</option>
             <option value="x86">x86</option>
