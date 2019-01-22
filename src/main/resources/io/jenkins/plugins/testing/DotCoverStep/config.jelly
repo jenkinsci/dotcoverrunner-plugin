@@ -1,57 +1,67 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry field="vsTestPlatform" title="Target platform">
-        <select name="vsTestPlatform">
-            <option value="x64">x64</option>
-            <option value="x86">x86</option>
-            <option value="ARM">ARM</option>
-        </select>
-    </f:entry>
 
-    <f:entry field="vsTestCaseFilter" title="Test case filter" description="Test case filter passed through to VSTest.">
-        <f:textbox default="${descriptor.DEFAULT_VSTESTCASEFILTER}"/>
-    </f:entry>
+    <f:section title="Test runner">
+        <f:description >
+            <f:textarea value="test" />
+        </f:description>
+        <f:entry field="vsTestPlatform" title="Target platform">
+            <select name="vsTestPlatform">
+                <option value="x64">x64</option>
+                <option value="x86">x86</option>
+                <option value="ARM">ARM</option>
+            </select>
+        </f:entry>
 
-    <f:entry field="vsTestAssemblyFilter"
-             title="Glob that defines which test assemblies to generata coverage data for.">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="vsTestCaseFilter" title="Test case filter">
+            <f:textbox default="${descriptor.DEFAULT_VSTESTCASEFILTER}"/>
+        </f:entry>
 
-    <f:entry field="vsTestArgs" title="Additional VSTest arguments to pass through.">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="vsTestAssemblyFilter"
+                 title="Test assembly glob">
+            <f:textbox default="${descriptor.DEFAULT_TEST_ASSEMBLIES_GLOB}"/>
+        </f:entry>
 
-    <f:entry field="coverageInclude" title="Semicolon-separated list of assemblies to include in the coverage.">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="vsTestArgs" title="Additional args">
+            <f:textbox/>
+        </f:entry>
+    </f:section>
 
-    <f:entry field="coverageClassInclude" title="Semicolon-separated list of classes to include in the coverage.">
-        <f:textbox/>
-    </f:entry>
+    <f:section title="Coverage settings">
+        <f:entry field="coverageInclude" title="Included assemblies">
+            <f:textbox/>
+        </f:entry>
 
-    <f:entry field="coverageFunctionInclude" title="Semicolon-separated list of methods to include in the coverage">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="coverageClassInclude" title="Included classes">
+            <f:textbox/>
+        </f:entry>
 
-    <f:entry field="processInclude" title="Semicolon-separated list processes to regard as part of the coverage run.">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="coverageFunctionInclude" title="Included methods">
+            <f:textbox/>
+        </f:entry>
 
-    <f:entry field="processExclude" title="Semicolon-separated list processes to disregard in the coverage run.">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="processInclude"
+                 title="Included processes">
+            <f:textbox/>
+        </f:entry>
 
-    <f:entry field="htmlReportPath" title="Name of the HTML coverage report file.">
-        <f:textbox/>
-    </f:entry>
+        <f:entry field="processExclude" title="Excluded processes">
+            <f:textbox/>
+        </f:entry>
 
-    <f:entry field="nDependXmlReportPath" title="Name of the nDepend XML coverage report file.">
-        <f:textbox/>
-    </f:entry>
+        <f:section title="Reporting">
+            <f:entry field="htmlReportPath" title="HTML report">
+                <f:textbox/>
+            </f:entry>
 
-    <f:entry field="detailedXMLReportPath" title="Name of the detailed XML coverage report file.">
-        <f:textbox/>
-    </f:entry>
+            <f:entry field="nDependXmlReportPath" title="nDepend report">
+                <f:textbox/>
+            </f:entry>
 
+            <f:entry field="detailedXMLReportPath" title="Detailed XML report">
+                <f:textbox/>
+            </f:entry>
+        </f:section>
+    </f:section>
 
 </j:jelly>

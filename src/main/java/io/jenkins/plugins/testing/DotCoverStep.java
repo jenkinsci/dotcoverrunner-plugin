@@ -25,19 +25,19 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final String JENKINS_FUNCTION_NAME = "dotcover";
 
-    private String vsTestPlatform;
+    private String vsTestPlatform; // default defined in config.jelly.
     private String vsTestCaseFilter = DescriptorImpl.DEFAULT_VSTESTCASEFILTER;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;
     private String vsTestArgs;
-    private String htmlReportPath;
-    private String nDependXmlReportPath;
-    private String detailedXMLReportPath;
     private String coverageInclude;
     private String coverageClassInclude;
     private String coverageFunctionInclude;
     private String coverageExclude;
     private String processInclude;
     private String processExclude;
+    private String htmlReportPath;
+    private String nDependXmlReportPath;
+    private String detailedXMLReportPath;
 
     @DataBoundConstructor
     public DotCoverStep() {
@@ -75,16 +75,6 @@ public class DotCoverStep extends Step implements Serializable {
         }
     }
 
-    public String getVsTestCaseFilter() {
-        return vsTestCaseFilter;
-    }
-
-    @SuppressWarnings("unused") // Used by Stapler
-    @DataBoundSetter
-    public void setVsTestCaseFilter(String vsTestCaseFilter) {
-        this.vsTestCaseFilter = vsTestCaseFilter;
-    }
-
     public String getVsTestPlatform() {
         return vsTestPlatform;
     }
@@ -94,23 +84,35 @@ public class DotCoverStep extends Step implements Serializable {
         this.vsTestPlatform = Util.fixEmptyAndTrim(vsTestPlatform);
     }
 
-    @SuppressWarnings("unused") // Used by Stapler
+
+    public String getVsTestCaseFilter() {
+        return vsTestCaseFilter;
+    }
+
+
+    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public String getVsTestAssemblyFilter() {
         return vsTestAssemblyFilter;
     }
 
-    @SuppressWarnings("unused") // Used by Stapler
+    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
+    @DataBoundSetter
+    public void setVsTestCaseFilter(String vsTestCaseFilter) {
+        this.vsTestCaseFilter = Util.fixEmptyAndTrim(vsTestCaseFilter);
+    }
+
+    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     @DataBoundSetter
     public void setVsTestAssemblyFilter(String vsTestAssemblyFilter) {
         this.vsTestAssemblyFilter = Util.fixEmptyAndTrim(vsTestAssemblyFilter);
     }
-
 
     public String getVsTestArgs() {
         return vsTestArgs;
     }
 
     @DataBoundSetter
+    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setVsTestArgs(String vsTestArgs) {
         this.vsTestArgs = Util.fixEmptyAndTrim(vsTestArgs);
     }
@@ -122,7 +124,7 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setCoverageInclude(String coverageInclude) {
-        this.coverageInclude = coverageInclude;
+        this.coverageInclude = Util.fixEmptyAndTrim(coverageInclude);
     }
 
     public String getCoverageClassInclude() {
@@ -132,7 +134,7 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setCoverageClassInclude(String coverageClassInclude) {
-        this.coverageClassInclude = coverageClassInclude;
+        this.coverageClassInclude = Util.fixEmptyAndTrim(coverageClassInclude);
     }
 
     public String getCoverageFunctionInclude() {
@@ -142,7 +144,7 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setCoverageFunctionInclude(String coverageFunctionInclude) {
-        this.coverageFunctionInclude = coverageFunctionInclude;
+        this.coverageFunctionInclude = Util.fixEmptyAndTrim(coverageFunctionInclude);
     }
 
     public String getCoverageExclude() {
@@ -152,27 +154,7 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setCoverageExclude(String coverageExclude) {
-        this.coverageExclude = coverageExclude;
-    }
-
-    public String getHtmlReportPath() {
-        return htmlReportPath;
-    }
-
-    @DataBoundSetter
-    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
-    public void setHtmlReportPath(String htmlReportPath) {
-        this.htmlReportPath = htmlReportPath;
-    }
-
-    public String getNDependXmlReportPath() {
-        return nDependXmlReportPath;
-    }
-
-    @DataBoundSetter
-    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
-    public void setNDependXmlReportPath(String nDependXmlReportPath) {
-        this.nDependXmlReportPath = nDependXmlReportPath;
+        this.coverageExclude = Util.fixEmptyAndTrim(coverageExclude);
     }
 
     public String getProcessInclude() {
@@ -182,7 +164,7 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setProcessInclude(String processInclude) {
-        this.processInclude = processInclude;
+        this.processInclude = Util.fixEmptyAndTrim(processInclude);
     }
 
     public String getProcessExclude() {
@@ -192,8 +174,29 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setProcessExclude(String processExclude) {
-        this.processExclude = processExclude;
+        this.processExclude = Util.fixEmptyAndTrim(processExclude);
     }
+
+    public String getHtmlReportPath() {
+        return htmlReportPath;
+    }
+
+    @DataBoundSetter
+    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
+    public void setHtmlReportPath(String htmlReportPath) {
+        this.htmlReportPath = Util.fixEmptyAndTrim(htmlReportPath);
+    }
+
+    public String getNDependXmlReportPath() {
+        return nDependXmlReportPath;
+    }
+
+    @DataBoundSetter
+    @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
+    public void setNDependXmlReportPath(String nDependXmlReportPath) {
+        this.nDependXmlReportPath = Util.fixEmptyAndTrim(nDependXmlReportPath);
+    }
+
 
     public String getDetailedXMLReportPath() {
         return detailedXMLReportPath;
@@ -202,8 +205,7 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     @SuppressWarnings("unused") // Used by Stapler as defined in config.jelly
     public void setDetailedXMLReportPath(String detailedXMLReportPath) {
-        this.detailedXMLReportPath = detailedXMLReportPath;
+        this.detailedXMLReportPath = Util.fixEmptyAndTrim(detailedXMLReportPath);
     }
-
 
 }
