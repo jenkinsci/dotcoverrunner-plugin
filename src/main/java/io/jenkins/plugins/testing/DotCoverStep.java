@@ -5,6 +5,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.TaskListener;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -48,7 +49,7 @@ public class DotCoverStep extends Step implements Serializable {
         return new DotCoverStepExecution(stepContext, this);
     }
 
-    @Extension
+    @Extension @Symbol("dotCover")
     public static class DescriptorImpl extends StepDescriptor {
 
         public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";

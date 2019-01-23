@@ -66,8 +66,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         String detailedReportPath = new File(outputDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
         String outputDirectoryPath = new File(outputDir.toURI()).getAbsolutePath();
         String tmpDirectoryPath = new File(tmpDir.toURI()).getAbsolutePath();
-
-        String combinedSnapshot = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
+        String combinedSnapshotPath = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
 
         try (PrintStream logger = listener.getLogger()) {
             logger.println("Cleaning output directory: " + outputDir);
@@ -93,19 +92,19 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
                 snapshotPaths.add(new File(filePath.toURI()).getAbsolutePath());
             }
             String mergedSnapshotPaths = String.join(";", snapshotPaths);
-            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + combinedSnapshot);
+            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + combinedSnapshotPath);
 
             if (isSet(dotCoverStep.getHtmlReportPath())) {
-                launchDotCover("Report", "/ReportType=HTML", "/Source=" + combinedSnapshot, "/Output=" + htmlReportPath);
+                launchDotCover("Report", "/ReportType=HTML", "/Source=" + combinedSnapshotPath, "/Output=" + htmlReportPath);
                 relaxJavaScriptSecurity(htmlReportPath);
             }
 
             if (isSet(dotCoverStep.getNDependXmlReportPath())) {
-                launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + combinedSnapshot, "/Output=" + nDependReportPath);
+                launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + combinedSnapshotPath, "/Output=" + nDependReportPath);
             }
 
             if (isSet(dotCoverStep.getDetailedXMLReportPath())) {
-                launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + combinedSnapshot, "/Output=" + detailedReportPath);
+                launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + combinedSnapshotPath, "/Output=" + detailedReportPath);
             }
         }
         return dotCoverStep;

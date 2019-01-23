@@ -2,8 +2,18 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <name>DotCover Runner</name>
-    <description>DotCover Runner</description>
+    <name>DotCover</name>
+    <description>DotCover Runner Plugin</description>
+
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/DotCover+Plugin</url>
+
+    <developers>
+        <developer>
+            <name>Rasmus Wihlborg Jelsgaard</name>
+            <email>rje@3shape.com</email>
+            <organization>3Shape</organization>
+        </developer>
+    </developers>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -25,7 +35,7 @@
     </parent>
 
     <groupId>io.jenkins.plugins.testing</groupId>
-    <artifactId>testrunner</artifactId>
+    <artifactId>dotcover</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 

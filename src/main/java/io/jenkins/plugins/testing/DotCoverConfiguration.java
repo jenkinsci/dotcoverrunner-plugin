@@ -2,14 +2,12 @@ package io.jenkins.plugins.testing;
 
 import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
-import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.Serializable;
 
 @Extension
-@Symbol("dotcoverExcludes")
 public class DotCoverConfiguration extends GlobalConfiguration implements Serializable {
 
     private static final long serialVersionUID = 6197163805395054799L;

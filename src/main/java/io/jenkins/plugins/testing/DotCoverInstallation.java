@@ -101,7 +101,6 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
     }
 
     @Extension
-    @Symbol("dotcovertool")
     public static class DescriptorImpl extends ToolDescriptor<DotCoverInstallation> {
 
         public DescriptorImpl() {
