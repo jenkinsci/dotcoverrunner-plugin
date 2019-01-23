@@ -25,7 +25,7 @@ public class DotCoverStep extends Step implements Serializable {
 
     private static final String JENKINS_FUNCTION_NAME = "dotcover";
 
-    private String vsTestPlatform; // default defined in config.jelly.
+    private String vsTestPlatform = DescriptorImpl.DEFAULT_TEST_PLATFORM; // default defined in config.jelly.
     private String vsTestCaseFilter;
     private String vsTestAssemblyFilter = DescriptorImpl.DEFAULT_TEST_ASSEMBLIES_GLOB;
     private String vsTestArgs;
@@ -52,6 +52,7 @@ public class DotCoverStep extends Step implements Serializable {
     public static class DescriptorImpl extends StepDescriptor {
 
         public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
+        public static final String DEFAULT_TEST_PLATFORM = "x64";
 
         @Override
         public String getFunctionName() {
@@ -195,7 +196,6 @@ public class DotCoverStep extends Step implements Serializable {
     public void setNDependXmlReportPath(String nDependXmlReportPath) {
         this.nDependXmlReportPath = Util.fixEmptyAndTrim(nDependXmlReportPath);
     }
-
 
     public String getDetailedXMLReportPath() {
         return detailedXMLReportPath;
