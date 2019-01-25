@@ -130,23 +130,19 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir, String configXmlPath) throws IOException, InterruptedException {
-        StringBuilder vsTestArgs = new StringBuilder();
-        vsTestArgs.append("/platform:");
-        vsTestArgs.append(dotCoverStepConfig.getVsTestPlatform());
-        vsTestArgs.append(' ');
-        vsTestArgs.append("/logger:trx");
-        vsTestArgs.append(' ');
-
-        vsTestArgs.append(dotCoverStepConfig.getTestAssemblyPath());
-        vsTestArgs.append(' ');
+        ArgumentListBuilder vsTestArgsBuilder = new ArgumentListBuilder();
+        vsTestArgsBuilder.add("/platform:");
+        vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestPlatform());
+        vsTestArgsBuilder.add("/logger:trx");
+        vsTestArgsBuilder.add(dotCoverStepConfig.getTestAssemblyPath());
 
         if (isSet(dotCoverStepConfig.getVsTestCaseFilter())) {
-            vsTestArgs.append("/testCaseFilter:");
-            vsTestArgs.append(dotCoverStepConfig.getVsTestCaseFilter());
+            vsTestArgsBuilder.add("/testCaseFilter:");
+            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestCaseFilter());
         }
 
         if (isSet(dotCoverStepConfig.getVsTestArgs())) {
-            vsTestArgs.append(dotCoverStepConfig.getVsTestArgs());
+            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestArgs().split(" "));
         }
 
         Document document = DocumentHelper.createDocument();
@@ -157,7 +153,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         targetExecutable.addText(getVsTestToolPath());
 
         Element targetArguments = analyseParams.addElement("TargetArguments");
-        targetArguments.addText(vsTestArgs.toString());
+        targetArguments.addText(vsTestArgsBuilder.toString());
 
         Element targetWorkingDir = analyseParams.addElement("TargetWorkingDir");
         targetWorkingDir.addText(outputDirectory);
