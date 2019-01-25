@@ -13,11 +13,13 @@ import hudson.tools.ToolProperty;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.vstest_runner.VsTestInstallation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 
@@ -108,10 +110,10 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
             load();
         }
 
-        @SuppressWarnings("SuspiciousToArrayCall")
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) {
-            setInstallations(req.bindJSONToList(clazz, json.get("tool")).toArray(new DotCoverInstallation[0]));
+            setInstallations(req.bindJSONToList(DotCoverInstallation.class, json.get("tool"))
+                    .toArray((DotCoverInstallation[]) Array.newInstance(DotCoverInstallation.class, 0)));
             save();
             return true;
         }
