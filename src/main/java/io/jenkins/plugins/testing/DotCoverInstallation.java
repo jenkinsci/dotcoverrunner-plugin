@@ -10,18 +10,15 @@ import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolDescriptor;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolProperty;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.vstest_runner.VsTestInstallation;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 import static java.util.Collections.emptyList;

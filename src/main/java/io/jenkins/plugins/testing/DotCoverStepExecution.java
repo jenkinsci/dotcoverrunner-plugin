@@ -7,6 +7,15 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -16,16 +25,6 @@ import org.dom4j.io.XMLWriter;
 import org.jenkinsci.plugins.vstest_runner.VsTestInstallation;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
-
-import javax.annotation.Nonnull;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents one execution of a @{@link DotCoverStep} in a @{@link hudson.model.Run}.

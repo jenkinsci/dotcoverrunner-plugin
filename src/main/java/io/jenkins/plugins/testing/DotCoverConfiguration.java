@@ -1,11 +1,10 @@
 package io.jenkins.plugins.testing;
 
 import hudson.Extension;
+import java.io.Serializable;
 import jenkins.model.GlobalConfiguration;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-
-import java.io.Serializable;
 
 @Extension
 public class DotCoverConfiguration extends GlobalConfiguration implements Serializable {

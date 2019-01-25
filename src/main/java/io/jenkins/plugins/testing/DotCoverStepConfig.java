@@ -1,8 +1,7 @@
 package io.jenkins.plugins.testing;
 
-import org.apache.commons.lang.NullArgumentException;
-
 import java.io.Serializable;
+import org.apache.commons.lang.NullArgumentException;
 
 final class DotCoverStepConfig implements Serializable {
 
