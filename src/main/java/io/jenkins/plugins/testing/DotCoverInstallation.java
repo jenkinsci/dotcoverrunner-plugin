@@ -43,6 +43,11 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
     }
 
 
+    @Override
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
+    }
+
     /**
      * This method is run every time Jenkins is started. It ensures there is a least one tool installation, creating a default installation if none exists.
      */
@@ -87,10 +92,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         return new DotCoverInstallation(getName(), home, emptyList());
     }
 
-    @Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
-    }
+
 
     @Override
     public DotCoverInstallation forEnvironment(EnvVars environment) {
