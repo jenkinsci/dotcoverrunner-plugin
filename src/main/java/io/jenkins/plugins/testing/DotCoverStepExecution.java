@@ -53,6 +53,23 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
     }
 
+    /**
+     * Map workspace to its node or jenkins instance
+     *
+     * @param workspace The workspace to map
+     * @return The node that the workspace is associated with.
+     */
+    private static Node workspaceToNode(@Nonnull FilePath workspace) {
+        Computer computer = workspace.toComputer();
+        Node node = null;
+        if (computer != null) node = computer.getNode();
+        return (node != null) ? node : Jenkins.get();
+    }
+
+    private static boolean isSet(final String s) {
+        return !Strings.isNullOrEmpty(s);
+    }
+
     @Override
     protected DotCoverStep run() throws Exception {
         TaskListener listener = context.get(TaskListener.class);
@@ -256,19 +273,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
     }
 
-    /**
-     * Map workspace to its node or jenkins instance
-     *
-     * @param workspace The workspace to map
-     * @return The node that the workspace is associated with.
-     */
-    private static Node workspaceToNode(@Nonnull FilePath workspace) {
-        Computer computer = workspace.toComputer();
-        Node node = null;
-        if (computer != null) node = computer.getNode();
-        return (node != null) ? node : Jenkins.get();
-    }
-
     private String getVsTestToolPath() throws IOException, InterruptedException {
         EnvVars envVars = getContext().get(EnvVars.class);
         TaskListener listener = getContext().get(TaskListener.class);
@@ -284,10 +288,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
 
         return installation.getVsTestExe();
-    }
-
-    private static boolean isSet(final String s) {
-        return !Strings.isNullOrEmpty(s);
     }
 
 }

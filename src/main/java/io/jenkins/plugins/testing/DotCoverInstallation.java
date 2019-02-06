@@ -42,12 +42,6 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         super(name, home, properties);
     }
 
-
-    @Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
-    }
-
     /**
      * This method is run every time Jenkins is started. It ensures there is a least one tool installation, creating a default installation if none exists.
      */
@@ -77,6 +71,11 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         return defaultInstallation;
     }
 
+    @Override
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
+    }
+
     /**
      * Finds the DotCover tool installation for the given node.
      *
@@ -91,7 +90,6 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         String home = translateFor(node, log);
         return new DotCoverInstallation(getName(), home, emptyList());
     }
-
 
 
     @Override

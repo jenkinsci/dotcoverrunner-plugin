@@ -48,35 +48,6 @@ public class DotCoverStep extends Step implements Serializable {
         return new DotCoverStepExecution(stepContext, this);
     }
 
-    @Extension
-    @Symbol("dotCover")
-    public static class DescriptorImpl extends StepDescriptor {
-
-        public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
-        public static final String DEFAULT_TEST_PLATFORM = "x64";
-
-        @Override
-        @Nonnull
-        public String getFunctionName() {
-            return JENKINS_FUNCTION_NAME;
-        }
-
-        @Override
-        @Nonnull
-        public String getDisplayName() {
-            return "Generate code coverage data and report(s)";
-        }
-
-        @Override
-        public Set<? extends Class<?>> getRequiredContext() {
-            Set<Class<?>> contexts = new HashSet<>();
-            contexts.add(TaskListener.class);
-            contexts.add(Launcher.class);
-            contexts.add(FilePath.class);
-            return Collections.unmodifiableSet(contexts);
-        }
-    }
-
     public String getVsTestPlatform() {
         return vsTestPlatform;
     }
@@ -86,18 +57,17 @@ public class DotCoverStep extends Step implements Serializable {
         this.vsTestPlatform = Util.fixEmptyAndTrim(vsTestPlatform);
     }
 
-
     public String getVsTestCaseFilter() {
         return vsTestCaseFilter;
-    }
-
-    public String getVsTestAssemblyFilter() {
-        return vsTestAssemblyFilter;
     }
 
     @DataBoundSetter
     public void setVsTestCaseFilter(String vsTestCaseFilter) {
         this.vsTestCaseFilter = Util.fixEmptyAndTrim(vsTestCaseFilter);
+    }
+
+    public String getVsTestAssemblyFilter() {
+        return vsTestAssemblyFilter;
     }
 
     @DataBoundSetter
@@ -193,6 +163,35 @@ public class DotCoverStep extends Step implements Serializable {
     @DataBoundSetter
     public void setDetailedXMLReportPath(String detailedXMLReportPath) {
         this.detailedXMLReportPath = Util.fixEmptyAndTrim(detailedXMLReportPath);
+    }
+
+    @Extension
+    @Symbol("dotCover")
+    public static class DescriptorImpl extends StepDescriptor {
+
+        public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
+        public static final String DEFAULT_TEST_PLATFORM = "x64";
+
+        @Override
+        @Nonnull
+        public String getFunctionName() {
+            return JENKINS_FUNCTION_NAME;
+        }
+
+        @Override
+        @Nonnull
+        public String getDisplayName() {
+            return "Generate code coverage data and report(s)";
+        }
+
+        @Override
+        public Set<? extends Class<?>> getRequiredContext() {
+            Set<Class<?>> contexts = new HashSet<>();
+            contexts.add(TaskListener.class);
+            contexts.add(Launcher.class);
+            contexts.add(FilePath.class);
+            return Collections.unmodifiableSet(contexts);
+        }
     }
 
 }
