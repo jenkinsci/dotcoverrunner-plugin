@@ -38,7 +38,6 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
      * @param properties tool properties.
      */
     @DataBoundConstructor
-    @SuppressWarnings("")
     public DotCoverInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
         super(name, home, properties);
     }

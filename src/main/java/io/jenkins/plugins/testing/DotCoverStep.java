@@ -55,12 +55,14 @@ public class DotCoverStep extends Step implements Serializable {
         public static final String DEFAULT_TEST_ASSEMBLIES_GLOB = "**/*Test/bin/**/Release/*Test.dll";
         public static final String DEFAULT_TEST_PLATFORM = "x64";
 
-        @Override @Nonnull
+        @Override
+        @Nonnull
         public String getFunctionName() {
             return JENKINS_FUNCTION_NAME;
         }
 
-        @Override @Nonnull
+        @Override
+        @Nonnull
         public String getDisplayName() {
             return "Generate code coverage data and report(s)";
         }

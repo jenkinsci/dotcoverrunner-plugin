@@ -22,13 +22,11 @@ public class DotCoverConfiguration extends GlobalConfiguration implements Serial
         return GlobalConfiguration.all().get(DotCoverConfiguration.class);
     }
 
-    @SuppressWarnings("unused")
     public String getMandatoryExcludedAssemblies() {
         return mandatoryExcludedAssemblies;
     }
 
     @DataBoundSetter
-    @SuppressWarnings("unused")
     public void setMandatoryExcludedAssemblies(String mandatoryExcludedAssemblies) {
         this.mandatoryExcludedAssemblies = mandatoryExcludedAssemblies;
         save();
