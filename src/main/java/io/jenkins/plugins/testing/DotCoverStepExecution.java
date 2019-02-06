@@ -35,7 +35,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     private final StepContext context;
     private final DotCoverStep dotCoverStep;
     private final FilePath workspace;
-    //    private final String vsTestToolPath;
     private final String mandatoryExcludedAssemblies;
 
     /**
@@ -69,7 +68,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
         try (PrintStream logger = listener.getLogger()) {
             logger.println("Cleaning output directory: " + outputDir);
-            cleanOutputDirectory(outputDir);
 
             FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
 
@@ -131,18 +129,16 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
     private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir, String configXmlPath) throws IOException, InterruptedException {
         ArgumentListBuilder vsTestArgsBuilder = new ArgumentListBuilder();
-        vsTestArgsBuilder.add("/platform:");
-        vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestPlatform());
+        vsTestArgsBuilder.add("/platform:" + dotCoverStepConfig.getVsTestPlatform());
         vsTestArgsBuilder.add("/logger:trx");
         vsTestArgsBuilder.add(dotCoverStepConfig.getTestAssemblyPath());
 
         if (isSet(dotCoverStepConfig.getVsTestCaseFilter())) {
-            vsTestArgsBuilder.add("/testCaseFilter:");
-            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestCaseFilter());
+            vsTestArgsBuilder.add("/testCaseFilter:" + dotCoverStepConfig.getVsTestCaseFilter());
         }
 
         if (isSet(dotCoverStepConfig.getVsTestArgs())) {
-            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestArgs().split(" "));
+            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestArgs().split(" ")); // TODO move to before dll path
         }
 
         Document document = DocumentHelper.createDocument();
@@ -260,13 +256,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         if (exitCode != 0) {
             throw new IllegalStateException("The launcher exited with a non-zero exit code. Exit code: " + exitCode);
         }
-    }
-
-    private void cleanOutputDirectory(FilePath outputDir) throws IOException, InterruptedException {
-        if (outputDir.exists()) {
-            outputDir.deleteRecursive();
-        }
-        outputDir.mkdirs();
     }
 
     /**
