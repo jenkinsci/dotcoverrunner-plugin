@@ -67,8 +67,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         String combinedSnapshotPath = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
 
         try (PrintStream logger = listener.getLogger()) {
-            logger.println("Cleaning output directory: " + outputDir);
-
             FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
 
             for (FilePath assembly : assemblies) {
@@ -138,7 +136,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
 
         if (isSet(dotCoverStepConfig.getVsTestArgs())) {
-            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestArgs().split(" ")); // TODO move to before dll path
+            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestArgs().split(" "));
         }
 
         Document document = DocumentHelper.createDocument();
