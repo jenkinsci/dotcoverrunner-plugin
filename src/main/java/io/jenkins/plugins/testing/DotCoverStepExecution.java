@@ -127,7 +127,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         Charset utf8 = StandardCharsets.UTF_8;
         String content = new String(Files.readAllBytes(report), utf8);
         content = content.replaceAll(DotCoverStepConfig.IFRAME_NO_JAVASCRIPT, DotCoverStepConfig.IFRAME_ALLOW_JAVASCRIPT);
-        Files.write(report, content.getBytes());
+        Files.write(report, content.getBytes(utf8));
     }
 
     private DotCoverStepConfig prepareDotCoverStepConfig(FilePath testAssembly) throws IOException, InterruptedException {
@@ -282,12 +282,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         if (envVars != null) {
             return installation.forEnvironment(envVars).getVsTestExe();
         }
-
-        if (node != null) {
-            return installation.forNode(node, listener).getVsTestExe();
-        }
-
-        return installation.getVsTestExe();
+        return installation.forNode(node, listener).getVsTestExe();
     }
 
 }
