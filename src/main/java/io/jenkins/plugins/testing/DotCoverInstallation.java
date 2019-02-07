@@ -48,6 +48,8 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
     @Initializer(after = EXTENSIONS_AUGMENTED)
     public static void onLoaded() {
         DescriptorImpl descriptor = (DotCoverInstallation.DescriptorImpl) Jenkins.get().getDescriptor(DotCoverInstallation.class);
+        assert (descriptor != null);
+
         DotCoverInstallation[] installations = descriptor.getInstallations();
         if (installations != null && installations.length > 0) {
             return;
