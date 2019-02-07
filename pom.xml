@@ -10,10 +10,10 @@
     <developers>
         <developer>
             <name>Rasmus Wihlborg Jelsgaard</name>
-            <email>rje@3shape.com</email>
-            <organization>3Shape</organization>
+            <email>jelsgaard@gmail.com</email>
         </developer>
     </developers>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -113,7 +113,21 @@
 
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>artifactorydk-releases</name>
+            <url>https://artifactory/maven-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>artifactorydk-snapshots</name>
+            <url>https://artifactory/maven-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
