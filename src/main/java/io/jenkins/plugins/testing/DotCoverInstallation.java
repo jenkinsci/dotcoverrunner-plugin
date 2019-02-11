@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -122,6 +123,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
             return "DotCover";
         }
 
+        @CheckForNull
         public DotCoverInstallation findInstallationByName(String installationName) {
             for (DotCoverInstallation installation : getInstallations()) {
                 if (installation.getName().equals(installationName)) {
