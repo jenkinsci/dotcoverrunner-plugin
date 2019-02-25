@@ -21,22 +21,22 @@
         </license>
     </licenses>
 
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>3.37</version>
+        <relativePath/>
+    </parent>
+
     <properties>
-        <jenkins.version>2.156</jenkins.version>
+        <jenkins.version>2.150.3</jenkins.version>
         <java.level>8</java.level>
         <workflow-step-api.version>2.13</workflow-step-api.version>
     </properties>
 
-    <parent>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plugin</artifactId>
-        <version>3.32</version>
-        <relativePath/>
-    </parent>
-
     <groupId>io.jenkins.plugins.testing</groupId>
     <artifactId>dotcover</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <modelVersion>4.0.0</modelVersion>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vstestrunner</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.8</version>
         </dependency>
 
         <dependency>

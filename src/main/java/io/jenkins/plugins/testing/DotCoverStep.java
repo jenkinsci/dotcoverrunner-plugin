@@ -1,5 +1,6 @@
 package io.jenkins.plugins.testing;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -10,7 +11,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
@@ -173,13 +173,13 @@ public class DotCoverStep extends Step implements Serializable {
         public static final String DEFAULT_TEST_PLATFORM = "x64";
 
         @Override
-        @Nonnull
+        @NonNull
         public String getFunctionName() {
             return JENKINS_FUNCTION_NAME;
         }
 
         @Override
-        @Nonnull
+        @NonNull
         public String getDisplayName() {
             return "Generate code coverage data and report(s)";
         }

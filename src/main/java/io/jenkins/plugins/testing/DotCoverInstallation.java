@@ -1,5 +1,7 @@
 package io.jenkins.plugins.testing;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.init.Initializer;
@@ -14,8 +16,6 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -89,7 +89,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
      * @throws InterruptedException If an InterruptedException occurs.
      */
     @Override
-    public DotCoverInstallation forNode(@Nonnull Node node, TaskListener log) throws IOException, InterruptedException {
+    public DotCoverInstallation forNode(@NonNull Node node, TaskListener log) throws IOException, InterruptedException {
         String home = translateFor(node, log);
         return new DotCoverInstallation(getName(), home, emptyList());
     }
@@ -117,7 +117,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
             return true;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return "DotCover";

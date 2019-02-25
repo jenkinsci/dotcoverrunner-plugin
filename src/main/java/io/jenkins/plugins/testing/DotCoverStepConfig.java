@@ -1,7 +1,7 @@
 package io.jenkins.plugins.testing;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.Serializable;
-import javax.annotation.Nonnull;
 
 final class DotCoverStepConfig implements Serializable {
 
@@ -29,7 +29,7 @@ final class DotCoverStepConfig implements Serializable {
     private final String coverageAssemblyExclude;
     private final String processExclude;
 
-    DotCoverStepConfig(@Nonnull String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, @Nonnull String testAssemblyPath, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude) {
+    DotCoverStepConfig(@NonNull String vsTestPlatform, String vsTestCaseFilter, String vsTestArgs, @NonNull String testAssemblyPath, String coverageInclude, String coverageClassInclude, String coverageAssemblyExclude, String processInclude, String processExclude, String coverageFunctionInclude) {
         this.vsTestPlatform = vsTestPlatform;
         this.vsTestCaseFilter = vsTestCaseFilter;
         this.vsTestArgs = vsTestArgs;
