@@ -36,7 +36,7 @@
 
     <groupId>io.jenkins.plugins.testing</groupId>
     <artifactId>dotcover</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <packaging>hpi</packaging>
 
     <modelVersion>4.0.0</modelVersion>
