@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- This file has no bearing on the dotcover plugin java application. -->
+<!-- It is included as an example of the .xml config files produced for the dotcover cli tool. -->
 <AnalyseParams>
-    <TargetExecutable>C:\Program Files (x86)\Microsoft Visual
-        Studio\2017\Professional\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
+    <TargetExecutable>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
     </TargetExecutable>
-    <TargetArguments>/platform:x64 /logger:trx
-        C:\tmp\jenkinsWS\ThreeShape.Contracts\ThreeShape.ContractsTest\bin\Release\ThreeShape.ContractsTest.dll
-        /testcasefilter:"TestCategory!=LongRunning"
+    <TargetArguments>/platform:x64 /logger:trx "c:\Users\Rasmus Jelsgaard\source\repos\TestAppForDotCover\UnitTestProject1\bin\Debug\UnitTestProject1.dll"
     </TargetArguments>
-    <TargetWorkingDir>E:\src\ThreeShape.Contracts\</TargetWorkingDir>
+    <TargetWorkingDir>c:\tmp\DotCover</TargetWorkingDir>
     <TempDir>c:\tmp\DotCoverTemp\</TempDir>
     <Output>c:\tmp\DotCoverTemp\Snapshot.cov</Output>
     <Filters>
         <IncludeFilters>
             <FilterEntry>
-                <ModuleMask>ThreeShape.Contracts</ModuleMask>
+                <ModuleMask>*</ModuleMask>
                 <ClassMask>*</ClassMask>
                 <FunctionMask>*</FunctionMask>
             </FilterEntry>

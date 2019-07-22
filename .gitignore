@@ -34,12 +34,11 @@ buildNumber.properties
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Package Files # (except zip which is needed for test-only artifacts)
 *.jar
 *.war
 *.nar
 *.ear
-*.zip
 *.tar.gz
 *.rar
 

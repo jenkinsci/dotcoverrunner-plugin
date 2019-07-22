@@ -54,13 +54,11 @@
     <f:advanced title="Reporting" align="left">
         <f:section title="Reporting">
             <f:entry field="htmlReportPath" title="HTML report">
-                <f:textbox/>
+                <f:textbox default="${descriptor.DEFAULT_HTML_REPORT_PATH}" />
             </f:entry>
-
             <f:entry field="nDependXmlReportPath" title="nDepend report">
                 <f:textbox/>
             </f:entry>
-
             <f:entry field="detailedXMLReportPath" title="Detailed XML report">
                 <f:textbox/>
             </f:entry>

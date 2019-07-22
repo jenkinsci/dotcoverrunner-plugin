@@ -24,41 +24,49 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.37</version>
+        <version>3.47</version>
         <relativePath/>
     </parent>
 
     <properties>
-        <jenkins.version>2.150.3</jenkins.version>
+        <jenkins.version>2.176.1</jenkins.version>
         <java.level>8</java.level>
-        <workflow-step-api.version>2.13</workflow-step-api.version>
+        <workflow-step-api.version>2.20</workflow-step-api.version>
     </properties>
 
     <groupId>io.jenkins.plugins.testing</groupId>
     <artifactId>dotcover</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <modelVersion>4.0.0</modelVersion>
+
     <dependencies>
-
-        <!-- https://mvnrepository.com/artifact/dom4j/dom4j -->
-        <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>vstestrunner</artifactId>
             <version>1.0.8</version>
         </dependency>
 
-        <dependency>
+     <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-step-api</artifactId>
             <version>${workflow-step-api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jenkins</groupId>
+            <artifactId>configuration-as-code</artifactId>
+            <version>1.23</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jenkins</groupId>
+            <artifactId>configuration-as-code</artifactId>
+            <version>1.23</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -74,8 +82,8 @@
             <artifactId>workflow-job</artifactId>
             <version>2.9</version>
             <scope>test</scope>
-
         </dependency>
+
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-cps</artifactId>
@@ -93,7 +101,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-api</artifactId>
-            <version>2.30</version>
+            <version>2.31</version>
             <scope>test</scope>
         </dependency>
 
@@ -107,8 +115,21 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>structs</artifactId>
-            <version>1.17</version>
+            <version>1.18</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>pipeline-utility-steps</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
         </dependency>
 
     </dependencies>
@@ -150,17 +171,21 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Omitted because it complains about transient fields not being deserialzied properly which does is not an issue in Jenkins plugins -->
+                    <omitVisitors>SerializableIdiom</omitVisitors>
+                </configuration>
+            </plugin>
         </plugins>
-
     </build>
-    <!-- Assuming you want to host on @jenkinsci:
-    <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>
+
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <developerConnection>scm:git:git@git.3shape.local:jenkins/plugins/threeshape.jenkins.dotcover.git</developerConnection>
     </scm>
-    -->
+
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>

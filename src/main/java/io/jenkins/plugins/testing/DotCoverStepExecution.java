@@ -3,23 +3,23 @@ package io.jenkins.plugins.testing;
 import com.google.common.base.Strings;
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.jenkinsci.plugins.vstest_runner.VsTestInstallation;
@@ -32,25 +32,61 @@ import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecution<DotCoverStep> implements Serializable {
 
     private static final long serialVersionUID = -1431093121789817171L;
+    final FilePath tempDir;
+    final FilePath outputDir;
+    final DotCoverStep dotCoverStep;
+    private final transient PrintStream buildConsole;
+    private final transient TaskListener listener;
+    private final transient Launcher launcher;
     private final StepContext context;
-    private final DotCoverStep dotCoverStep;
     private final FilePath workspace;
-    private final String mandatoryExcludedAssemblies;
+    private final String agentHtmlReportPath;
+    private final String combinedSnapshotPath;
+    private final String agentNDependReportPath;
+    private final String agentDetailedReportPath;
 
-    /**
-     * Default constructor. Normally invoked by @{@link DotCoverStep}
-     *
-     * @param context      The context of this execution.
-     * @param dotCoverStep The step that created this execution.
-     * @throws IOException          If an IO error occured.
-     * @throws InterruptedException If the thread was interrupted, which typically happens if the @{@link hudson.model.Run} is cancelled.
-     */
     public DotCoverStepExecution(StepContext context, DotCoverStep dotCoverStep) throws IOException, InterruptedException {
         super(context);
         this.context = context;
+        this.listener = context.get(TaskListener.class);
+        this.buildConsole = listener.getLogger();
         this.workspace = context.get(FilePath.class);
+        this.launcher = workspace.createLauncher(listener);
         this.dotCoverStep = dotCoverStep;
-        mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
+        createDirIfNeeded(workspace);
+        this.tempDir = workspace.child("temp");
+        this.outputDir = workspace.child(dotCoverStep.getOutputDir());
+        createDirIfNeeded(tempDir, outputDir);
+        if (StringUtils.isNotBlank(dotCoverStep.getHtmlReportPath())) {
+            agentHtmlReportPath = toAgentPath(outputDir.child(dotCoverStep.getHtmlReportPath()));
+        } else {
+            agentHtmlReportPath = null;
+        }
+        if (StringUtils.isNotBlank(dotCoverStep.getNDependXmlReportPath())) {
+            agentNDependReportPath = toAgentPath(outputDir.child(dotCoverStep.getNDependXmlReportPath()));
+        } else {
+            agentNDependReportPath = null;
+        }
+        if (StringUtils.isNotBlank(dotCoverStep.getDetailedXMLReportPath())) {
+            agentDetailedReportPath = toAgentPath(outputDir.child(dotCoverStep.getDetailedXMLReportPath()));
+        } else {
+            agentDetailedReportPath = null;
+        }
+        combinedSnapshotPath = toAgentPath(outputDir.child(dotCoverStep.getSnapshotPath()));
+    }
+
+    @Override
+    protected DotCoverStep run() throws Exception {
+        FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
+        if (assemblies.length == 0) {
+            return dotCoverStep;
+        }
+        createCoverageSnapshots(assemblies, buildConsole);
+        mergeSnapshots();
+        createHTMLReport();
+        createNDependReport();
+        createDetailedXmlReport();
+        return dotCoverStep;
     }
 
     /**
@@ -66,190 +102,62 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         return (node != null) ? node : Jenkins.get();
     }
 
-    private static boolean isSet(final String s) {
-        return !Strings.isNullOrEmpty(s);
+
+    private void createCoverageSnapshots(@Nonnull FilePath[] assemblies, @Nonnull PrintStream buildConsole) throws IOException, InterruptedException {
+        if (assemblies.length == 0) {
+            return;
+        }
+        DotCoverConfigurationBuilder builder = new DotCoverConfigurationBuilder(this);
+        for (FilePath assembly : assemblies) {
+            Document config = builder.buildXmlDocument(assembly);
+            String assemblyName = assembly.getName();
+            String configXmlPath = toAgentPath(outputDir.child(assemblyName + DotCoverStep.CONFIG_XML_NAME));
+            buildConsole.println("---------------------------------------------------------------------------------------");
+            buildConsole.println("Generating DotCover config xml and writing it to " + configXmlPath);
+            buildConsole.println("---------------------------------------------------------------------------------------");
+            writeConfig(config, configXmlPath);
+            buildConsole.println("---------------------------------------------------------------------------------------");
+            buildConsole.println("Running DotCover testing for test assembly: " + assemblyName);
+            buildConsole.println("---------------------------------------------------------------------------------------");
+            launchDotCover("Cover", configXmlPath); // Generate coverage information
+        }
     }
 
-    @Override
-    protected DotCoverStep run() throws Exception {
-        TaskListener listener = context.get(TaskListener.class);
-        FilePath tmpDir = workspace.createTempDir(DotCoverStepConfig.DOTCOVER_TEMP_DIR_NAME, "tmp");
-        FilePath outputDir = workspace.child(DotCoverStepConfig.OUTPUT_DIR_NAME);
-
-        String htmlReportPath = new File(outputDir.child(DotCoverStepConfig.HTML_REPORT_NAME).toURI()).getAbsolutePath();
-        String nDependReportPath = new File(outputDir.child(DotCoverStepConfig.NDEPEND_XML_REPORT_NAME).toURI()).getAbsolutePath();
-        String detailedReportPath = new File(outputDir.child(DotCoverStepConfig.DETAILED_XML_REPORT_NAME).toURI()).getAbsolutePath();
-        String outputDirectoryPath = new File(outputDir.toURI()).getAbsolutePath();
-        String tmpDirectoryPath = new File(tmpDir.toURI()).getAbsolutePath();
-        String combinedSnapshotPath = new File(outputDir.child(DotCoverStepConfig.SNAPSHOT_NAME).toURI()).getAbsolutePath();
-
-        try (PrintStream logger = listener.getLogger()) {
-            FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
-
-            for (FilePath assembly : assemblies) {
-                String assemblyName = assembly.getName();
-                String snapshotPath = new File(tmpDir.child(assemblyName + DotCoverStepConfig.SNAPSHOT_MERGE_SUFFIX).toURI()).getAbsolutePath();
-                String configXmlPath = new File(outputDir.child(assemblyName + DotCoverStepConfig.CONFIG_XML_NAME).toURI()).getAbsolutePath();
-                DotCoverStepConfig config = prepareDotCoverStepConfig(assembly);
-                logger.println("Generating DotCover config xml: " + configXmlPath);
-                generateDotCoverConfigXml(config, snapshotPath, outputDirectoryPath, tmpDirectoryPath, configXmlPath);
-                logger.println("Running DotCover for test assembly:" + assemblyName);
-                launchDotCover("Cover", configXmlPath); // Generate coverage information
-            }
-
-            FilePath[] snapshotsToMerge = tmpDir.list("**/*" + DotCoverStepConfig.SNAPSHOT_MERGE_SUFFIX);
-
-            List<String> snapshotPaths = new ArrayList<>();
-            for (FilePath filePath : snapshotsToMerge) {
-                snapshotPaths.add(new File(filePath.toURI()).getAbsolutePath());
-            }
-            String mergedSnapshotPaths = String.join(";", snapshotPaths);
-            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + combinedSnapshotPath);
-
-            if (isSet(dotCoverStep.getHtmlReportPath())) {
-                launchDotCover("Report", "/ReportType=HTML", "/Source=" + combinedSnapshotPath, "/Output=" + htmlReportPath);
-                relaxJavaScriptSecurity(htmlReportPath);
-            }
-
-            if (isSet(dotCoverStep.getNDependXmlReportPath())) {
-                launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + combinedSnapshotPath, "/Output=" + nDependReportPath);
-            }
-
-            if (isSet(dotCoverStep.getDetailedXMLReportPath())) {
-                launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + combinedSnapshotPath, "/Output=" + detailedReportPath);
-            }
-        }
-        return dotCoverStep;
-    }
-
-    private void relaxJavaScriptSecurity(String htmlReportPath) throws IOException {
-        Path report = Paths.get(htmlReportPath);
-        Charset utf8 = StandardCharsets.UTF_8;
-        String content = new String(Files.readAllBytes(report), utf8);
-        content = content.replaceAll(DotCoverStepConfig.IFRAME_NO_JAVASCRIPT, DotCoverStepConfig.IFRAME_ALLOW_JAVASCRIPT);
-        Files.write(report, content.getBytes(utf8));
-    }
-
-    private DotCoverStepConfig prepareDotCoverStepConfig(FilePath testAssembly) throws IOException, InterruptedException {
-        String assemblyPath = new File(testAssembly.toURI()).getAbsolutePath();
-        String assemblies = null;
-        if (isSet(mandatoryExcludedAssemblies)) {
-            assemblies = mandatoryExcludedAssemblies;
-            if (isSet(dotCoverStep.getCoverageExclude())) {
-                assemblies += ";" + dotCoverStep.getCoverageExclude();
-            }
-        }
-        return new DotCoverStepConfig(dotCoverStep.getVsTestPlatform(), dotCoverStep.getVsTestCaseFilter(), dotCoverStep.getVsTestArgs(), assemblyPath, dotCoverStep.getCoverageInclude(), dotCoverStep.getCoverageClassInclude(), assemblies, dotCoverStep.getProcessInclude(), dotCoverStep.getProcessExclude(), dotCoverStep.getCoverageFunctionInclude());
-    }
-
-    private void generateDotCoverConfigXml(DotCoverStepConfig dotCoverStepConfig, String snapshotPath, String outputDirectory, String tmpDir, String configXmlPath) throws IOException, InterruptedException {
-        ArgumentListBuilder vsTestArgsBuilder = new ArgumentListBuilder();
-        vsTestArgsBuilder.add("/platform:" + dotCoverStepConfig.getVsTestPlatform());
-        vsTestArgsBuilder.add("/logger:trx");
-        vsTestArgsBuilder.add(dotCoverStepConfig.getTestAssemblyPath());
-
-        if (isSet(dotCoverStepConfig.getVsTestCaseFilter())) {
-            vsTestArgsBuilder.add("/testCaseFilter:" + dotCoverStepConfig.getVsTestCaseFilter());
-        }
-
-        if (isSet(dotCoverStepConfig.getVsTestArgs())) {
-            vsTestArgsBuilder.add(dotCoverStepConfig.getVsTestArgs().split(" "));
-        }
-
-        Document document = DocumentHelper.createDocument();
-
-        Element analyseParams = document.addElement("AnalyseParams");
-
-        Element targetExecutable = analyseParams.addElement("TargetExecutable");
-        targetExecutable.addText(getVsTestToolPath());
-
-        Element targetArguments = analyseParams.addElement("TargetArguments");
-        targetArguments.addText(vsTestArgsBuilder.toString());
-
-        Element targetWorkingDir = analyseParams.addElement("TargetWorkingDir");
-        targetWorkingDir.addText(outputDirectory);
-
-        Element tempDir = analyseParams.addElement("TempDir");
-        tempDir.addText(tmpDir);
-
-        Element output = analyseParams.addElement("Output"); // Path to snapshot (.cov) file.
-        output.addText(snapshotPath);
-
-        Element filters = analyseParams.addElement("Filters");
-
-        Element includeFilters = filters.addElement("IncludeFilters");
-
-        Element excludeFilters = filters.addElement("ExcludeFilters");
-
-        Element processFilters = filters.addElement("ProcessFilters");
-
-        processFilter(processFilters.addElement("IncludeFilters"), dotCoverStepConfig.getProcessInclude());
-        processFilter(processFilters.addElement("ExcludeFilters"), dotCoverStepConfig.getProcessExclude());
-
-        if (isSet(dotCoverStepConfig.getCoverageInclude())) {
-            for (String assemblyName : dotCoverStepConfig.getCoverageInclude().split(";")) {
-                if (isSet(assemblyName)) {
-                    Element filterEntry = includeFilters.addElement("FilterEntry");
-                    filterEntry.addElement("ModuleMask").addText(assemblyName);
-                    filterEntry.addElement("ClassMask").addText("*");
-                    filterEntry.addElement("FunctionMask").addText("*");
-                }
-            }
-        }
-
-        if (isSet(dotCoverStepConfig.getCoverageClassInclude())) {
-            for (String className : dotCoverStepConfig.getCoverageClassInclude().split(";")) {
-                if (isSet(className)) {
-                    Element filterEntry = includeFilters.addElement("FilterEntry");
-                    filterEntry.addElement("ModuleMask").addText("*");
-                    filterEntry.addElement("ClassMask").addText(className);
-                    filterEntry.addElement("FunctionMask").addText("*");
-                }
-            }
-        }
-
-        if (isSet(dotCoverStepConfig.getCoverageFunctionInclude())) {
-            for (String method : dotCoverStepConfig.getCoverageFunctionInclude().split(";")) {
-                if (isSet(method)) {
-                    Element filterEntry = includeFilters.addElement("FilterEntry");
-                    filterEntry.addElement("ModuleMask").addText("*");
-                    filterEntry.addElement("ClassMask").addText("*");
-                    filterEntry.addElement("FunctionMask").addText(method);
-                }
-            }
-        }
-
-        if (isSet(dotCoverStepConfig.getCoverageAssemblyExclude())) {
-            for (String assembly : dotCoverStepConfig.getCoverageAssemblyExclude().split(";")) {
-                if (isSet(assembly)) {
-                    Element filterEntry = excludeFilters.addElement("FilterEntry");
-                    filterEntry.addElement("ModuleMask").addText(assembly);
-                }
-            }
-        }
-
-        try (OutputStream out = new FilePath(new File(configXmlPath)).write()) {
+    private void writeConfig(Document config, String configXmlPath) throws IOException, InterruptedException {
+        FilePath destination = context.get(FilePath.class).child(configXmlPath);
+        try (OutputStream out = destination.write()) {
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(out, format);
-            writer.write(document);
+            writer.write(config);
             writer.close();
         }
     }
 
-    private void processFilter(Element parentElement, String input) {
-        if (!isSet(input)) return;
+    private void mergeSnapshots() throws IOException, InterruptedException {
+        FilePath[] snapshotsToMerge = tempDir.list("**/*" + DotCoverStep.SNAPSHOT_MERGE_SUFFIX);
+        List<String> snapshotPaths = new ArrayList<>();
+        for (FilePath filePath : snapshotsToMerge) {
+            snapshotPaths.add(toAgentPath(filePath));
+        }
+        String mergedSnapshotPaths = String.join(";", snapshotPaths);
+        if (!Strings.isNullOrEmpty(mergedSnapshotPaths)) {
+            launchDotCover("Merge", "/Source=" + mergedSnapshotPaths, "/Output=" + combinedSnapshotPath);
+        }
+    }
 
-        for (String s : input.split(";")) {
-            if (isSet(s)) {
-                parentElement.addElement("ProcessMask").addText(s);
-            }
+    private void createDetailedXmlReport() throws IOException, InterruptedException {
+        if (!Strings.isNullOrEmpty(dotCoverStep.getDetailedXMLReportPath())) {
+            launchDotCover("Report", "/ReportType=DetailedXML", "/Source=" + combinedSnapshotPath, "/Output=" + agentDetailedReportPath);
+        }
+    }
+
+    private void createNDependReport() throws IOException, InterruptedException {
+        if (!Strings.isNullOrEmpty(dotCoverStep.getNDependXmlReportPath())) {
+            launchDotCover("Report", "/ReportType=NDependXML", "/Source=" + combinedSnapshotPath, "/Output=" + agentNDependReportPath);
         }
     }
 
     public void launchDotCover(String... arguments) throws IOException, InterruptedException {
-        TaskListener listener = context.get(TaskListener.class);
-        PrintStream logger = listener.getLogger();
-        FilePath workspace = context.get(FilePath.class);
         EnvVars envVars = getContext().get(EnvVars.class);
         Node node = workspaceToNode(workspace);
         DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
@@ -258,12 +166,12 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         builder.addQuoted(dotCover.getHome());
         builder.add(arguments);
 
-        int exitCode = workspace.createLauncher(listener)
+        int exitCode = launcher
                 .launch()
                 .cmds(builder)
                 .envs(envVars)
-                .stdout(logger)
-                .stderr(logger)
+                .stdout(buildConsole)
+                .stderr(buildConsole)
                 .pwd(workspace)
                 .start()
                 .join();
@@ -273,7 +181,22 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
     }
 
-    private String getVsTestToolPath() throws IOException, InterruptedException {
+    private void createHTMLReport() throws IOException, InterruptedException {
+        if (!Strings.isNullOrEmpty(dotCoverStep.getHtmlReportPath())) {
+            launchDotCover("Report", "/ReportType=HTML", "/Source=" + combinedSnapshotPath, "/Output=" + agentHtmlReportPath);
+            relaxJavaScriptSecurity(agentHtmlReportPath);
+        }
+    }
+
+    private void relaxJavaScriptSecurity(@Nonnull String htmlReportPath) throws IOException, InterruptedException {
+        Charset utf8 = StandardCharsets.UTF_8;
+        FilePath report = workspace.child(htmlReportPath);
+        String content = report.readToString();
+        content = content.replaceAll(DotCoverStep.IFRAME_NO_JAVASCRIPT, DotCoverStep.IFRAME_ALLOW_JAVASCRIPT);
+        report.write(content, utf8.toString());
+    }
+
+    final String getVsTestToolPath() throws IOException, InterruptedException {
         EnvVars envVars = getContext().get(EnvVars.class);
         TaskListener listener = getContext().get(TaskListener.class);
         Node node = workspaceToNode(workspace);
@@ -283,6 +206,23 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
             return installation.forEnvironment(envVars).getVsTestExe();
         }
         return installation.forNode(node, listener).getVsTestExe();
+    }
+
+    private void createDirIfNeeded(FilePath... dirs) throws IOException, InterruptedException {
+        for (FilePath directory : dirs) {
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+        }
+    }
+
+    // Sadly, this is necessary due to limitations in the current implementation of getRemote().
+    final String toAgentPath(@Nonnull FilePath filePath) throws IOException, InterruptedException {
+        if (launcher.isUnix()) {
+            return filePath.getRemote();
+        } else {
+            return filePath.toURI().getPath().substring(1).replace("\\", "/");
+        }
     }
 
 }
