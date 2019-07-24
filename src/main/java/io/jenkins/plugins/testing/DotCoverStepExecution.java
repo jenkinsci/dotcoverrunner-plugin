@@ -36,23 +36,28 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     final FilePath outputDir;
     final DotCoverStep dotCoverStep;
     private final transient PrintStream buildConsole;
-    private final transient TaskListener listener;
     private final transient Launcher launcher;
     private final StepContext context;
     private final FilePath workspace;
+    private final String dotCoverToolPath;
     private final String agentHtmlReportPath;
     private final String combinedSnapshotPath;
     private final String agentNDependReportPath;
     private final String agentDetailedReportPath;
+    private final EnvVars envVars;
 
-    public DotCoverStepExecution(StepContext context, DotCoverStep dotCoverStep) throws IOException, InterruptedException {
+    public DotCoverStepExecution(@Nonnull StepContext context, @Nonnull DotCoverStep dotCoverStep) throws IOException, InterruptedException {
         super(context);
         this.context = context;
-        this.listener = context.get(TaskListener.class);
+        TaskListener listener = context.get(TaskListener.class);
         this.buildConsole = listener.getLogger();
         this.workspace = context.get(FilePath.class);
         this.launcher = workspace.createLauncher(listener);
         this.dotCoverStep = dotCoverStep;
+        this.envVars = getContext().get(EnvVars.class);
+        Node node = workspaceToNode(workspace);
+        DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
+        this.dotCoverToolPath = toAgentPath(workspace.child(dotCover.getHome()));
         createDirIfNeeded(workspace);
         this.tempDir = workspace.child("temp");
         this.outputDir = workspace.child(dotCoverStep.getOutputDir());
@@ -157,13 +162,9 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         }
     }
 
-    public void launchDotCover(String... arguments) throws IOException, InterruptedException {
-        EnvVars envVars = getContext().get(EnvVars.class);
-        Node node = workspaceToNode(workspace);
-        DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
-
+    public int launchDotCover(String... arguments) throws IOException, InterruptedException {
         ArgumentListBuilder builder = new ArgumentListBuilder();
-        builder.add(dotCover.getHome());
+        builder.add(dotCoverToolPath);
         builder.add(arguments);
 
         int exitCode = launcher
@@ -179,6 +180,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         if (exitCode != 0) {
             throw new IllegalStateException("The launcher exited with a non-zero exit code. Exit code: " + exitCode);
         }
+        return exitCode;
     }
 
     private void createHTMLReport() throws IOException, InterruptedException {
