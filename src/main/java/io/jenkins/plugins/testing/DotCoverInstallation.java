@@ -126,7 +126,7 @@ public class DotCoverInstallation extends ToolInstallation implements NodeSpecif
         @CheckForNull
         public DotCoverInstallation findInstallationByName(String installationName) {
             for (DotCoverInstallation installation : getInstallations()) {
-                if (installation.getName().equals(installationName)) {
+                if (installation != null && installation.getName().equals(installationName)) {
                     return installation;
                 }
             }
