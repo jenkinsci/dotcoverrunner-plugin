@@ -137,12 +137,12 @@
         <repository>
             <id>central</id>
             <name>artifactorydk-releases</name>
-            <url>https://artifactory/maven-local</url>
+            <url>https://artifactorydk/maven-local</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
             <name>artifactorydk-snapshots</name>
-            <url>https://artifactory/maven-local</url>
+            <url>https://artifactorydk/maven-local</url>
         </snapshotRepository>
     </distributionManagement>
 
