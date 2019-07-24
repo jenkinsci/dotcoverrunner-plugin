@@ -163,7 +163,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
 
         ArgumentListBuilder builder = new ArgumentListBuilder();
-        builder.addQuoted(dotCover.getHome());
+        builder.add(dotCover.getHome());
         builder.add(arguments);
 
         int exitCode = launcher
