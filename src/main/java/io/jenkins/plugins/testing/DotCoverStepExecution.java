@@ -37,7 +37,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     final DotCoverStep dotCoverStep;
     private final transient PrintStream buildConsole;
     private final transient Launcher launcher;
-    private final StepContext context;
     private final FilePath workspace;
     private final String dotCoverToolPath;
     private final String agentHtmlReportPath;
@@ -48,13 +47,12 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
 
     public DotCoverStepExecution(@Nonnull StepContext context, @Nonnull DotCoverStep dotCoverStep) throws IOException, InterruptedException {
         super(context);
-        this.context = context;
         TaskListener listener = context.get(TaskListener.class);
         this.buildConsole = listener.getLogger();
         this.workspace = context.get(FilePath.class);
-        this.launcher = workspace.createLauncher(listener);
+        this.launcher = context.get(Launcher.class);
         this.dotCoverStep = dotCoverStep;
-        this.envVars = getContext().get(EnvVars.class);
+        this.envVars = context.get(EnvVars.class);
         Node node = workspaceToNode(workspace);
         DotCoverInstallation dotCover = DotCoverInstallation.getDefaultInstallation().forNode(node, listener);
         this.dotCoverToolPath = toAgentPath(workspace.child(dotCover.getHome()));
@@ -129,7 +127,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private void writeConfig(Document config, String configXmlPath) throws IOException, InterruptedException {
-        FilePath destination = context.get(FilePath.class).child(configXmlPath);
+        FilePath destination = workspace.child(configXmlPath);
         try (OutputStream out = destination.write()) {
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(out, format);
