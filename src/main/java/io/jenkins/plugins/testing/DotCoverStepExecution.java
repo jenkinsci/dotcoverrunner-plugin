@@ -78,20 +78,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         combinedSnapshotPath = toAgentPath(outputDir.child(dotCoverStep.getSnapshotPath()));
     }
 
-    @Override
-    protected DotCoverStep run() throws Exception {
-        FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
-        if (assemblies.length == 0) {
-            return dotCoverStep;
-        }
-        createCoverageSnapshots(assemblies, buildConsole);
-        mergeSnapshots();
-        createHTMLReport();
-        createNDependReport();
-        createDetailedXmlReport();
-        return dotCoverStep;
-    }
-
     /**
      * Map workspace to its node or jenkins instance
      *
@@ -105,6 +91,19 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
         return (node != null) ? node : Jenkins.get();
     }
 
+    @Override
+    protected DotCoverStep run() throws Exception {
+        FilePath[] assemblies = workspace.list(dotCoverStep.getVsTestAssemblyFilter());
+        if (assemblies.length == 0) {
+            return dotCoverStep;
+        }
+        createCoverageSnapshots(assemblies, buildConsole);
+        mergeSnapshots();
+        createHTMLReport();
+        createNDependReport();
+        createDetailedXmlReport();
+        return dotCoverStep;
+    }
 
     private void createCoverageSnapshots(@Nonnull FilePath[] assemblies, @Nonnull PrintStream buildConsole) throws IOException, InterruptedException {
         if (assemblies.length == 0) {
