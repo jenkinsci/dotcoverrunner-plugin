@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AnalyseParams>
+    <TargetExecutable>C:\Program Files (x86)\Microsoft Visual
+        Studio\2017\Professional\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
+    </TargetExecutable>
+    <TargetArguments>/platform:x64 /logger:trx SomeTest.dll"</TargetArguments>
+    <TargetWorkingDir>c:\tmp\DotCover</TargetWorkingDir>
+    <TempDir>c:\tmp\DotCoverTemp\</TempDir>
+    <Output>c:\tmp\DotCoverTemp\Snapshot.cov</Output>
+    <Filters>
+        <IncludeFilters>
+            <FilterEntry>
+                <ModuleMask>*</ModuleMask>
+                <ClassMask>*</ClassMask>
+                <FunctionMask>*</FunctionMask>
+            </FilterEntry>
+        </IncludeFilters>
+        <ExcludeFilters>
+        </ExcludeFilters>
+    </Filters>
+    <ProcessFilters/>
+</AnalyseParams>

@@ -3,7 +3,6 @@
 
     <f:section title="Test runner">
 
-
         <f:entry field="vsTestPlatform" title="Target platform">
             <select name="vsTestPlatform">
                 <option value="x64">x64</option>
@@ -54,13 +53,13 @@
     <f:advanced title="Reporting" align="left">
         <f:section title="Reporting">
             <f:entry field="htmlReportPath" title="HTML report">
-                <f:textbox default="${descriptor.DEFAULT_HTML_REPORT_PATH}" />
+                <f:textbox default="${descriptor.DEFAULT_HTML_REPORT_PATH}"/>
             </f:entry>
             <f:entry field="nDependXmlReportPath" title="nDepend report">
-                <f:textbox/>
+                <f:textbox default="${descriptor.DEFAULT_NDEPEND_REPORT_PATH}"/>
             </f:entry>
             <f:entry field="detailedXMLReportPath" title="Detailed XML report">
-                <f:textbox/>
+                <f:textbox default="${descriptor.DEFAULT_DETAILED_REPORT_PATH}"/>
             </f:entry>
         </f:section>
     </f:advanced>

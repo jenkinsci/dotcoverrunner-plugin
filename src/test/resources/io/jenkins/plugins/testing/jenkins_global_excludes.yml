@@ -1,3 +1,7 @@
+unclassified:
+  dotCoverConfiguration:
+    mandatoryExcludedAssemblies: "*.Core;*.DongleSystem;*.FocusScanShared;*Test*;FluentAssertions;SlimDX;MathNet.Numerics"
+
 tool:
   vstestinstallation:
     installations:

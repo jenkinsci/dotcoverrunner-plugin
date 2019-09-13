@@ -23,7 +23,6 @@ import static org.junit.Assert.assertThat;
 
 public class DotCoverStepExecutionTest {
 
-
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
 
@@ -36,7 +35,7 @@ public class DotCoverStepExecutionTest {
     }
 
     @Test
-    @ConfiguredWithCode("VsTestTest.yml")
+    @ConfiguredWithCode("jenkins_no_global_excludes.yml")
     public void skipDotCoverTasksIfNoMatchingTestDLLs() throws Exception {
         CpsFlowDefinition pipelineDefinition = makeDotCoverPipeline();
         WorkflowJob project = master.createProject(WorkflowJob.class);
@@ -46,7 +45,7 @@ public class DotCoverStepExecutionTest {
 
 
     @Test
-    @ConfiguredWithCode("VsTestTest.yml")
+    @ConfiguredWithCode("jenkins_no_global_excludes.yml")
     public void testInvalidTestDllFailsBuild() throws Exception // TODO can i get the failure cause somehow?
     {
         String pipeline = "pipeline {\n" +
@@ -75,7 +74,7 @@ public class DotCoverStepExecutionTest {
     }
 
     @Test
-    @ConfiguredWithCode("VsTestTest.yml")
+    @ConfiguredWithCode("jenkins_no_global_excludes.yml")
     public void foldersCreatedCorrectly() throws Exception {
         final String pipeline = "pipeline {\n" +
                 "  agent {label 'test-agent'}\n" +
@@ -113,7 +112,7 @@ public class DotCoverStepExecutionTest {
     }
 
     @Test
-    @ConfiguredWithCode("VsTestTest.yml")
+    @ConfiguredWithCode("jenkins_no_global_excludes.yml")
     public void runTestsAndDoCoverageForProjectOk() throws Exception {
         WorkflowJob project = master.createProject(WorkflowJob.class);
         URL zipFile = getClass().getResource("TestAppForDotCover.zip");
@@ -121,7 +120,7 @@ public class DotCoverStepExecutionTest {
         CpsFlowDefinition pipelineDefinition = new CpsFlowDefinition("" +
                 "node {\n" +
                 "  unzip '" + zipFilePath + "'\n" +
-                "  dotcover vsTestAssemblyFilter: '**/*Test*/bin/**/Debug/*Test.dll', htmlReportPath: 'reports/my-coverage.html'\n" +
+                "  dotcover vsTestAssemblyFilter: '**/*Test*/bin/**/*Test.dll', htmlReportPath: 'reports/my-coverage.html'\n" +
                 "}", true);
         project.setDefinition(pipelineDefinition);
 
@@ -129,14 +128,14 @@ public class DotCoverStepExecutionTest {
         FilePath workspace = master.jenkins.getWorkspaceFor(project);
         FilePath[] snapshots = workspace.list("**/*.cov");
         FilePath[] htmlReport = workspace.list("**/my-coverage.html");
-        FilePath[] nDependReport = workspace.list("**/ndepend.html");
-        FilePath[] detailedXMLReport = workspace.list("**/detailed-report.xml");
+        FilePath[] nDependReport = workspace.list("**/" + DotCoverStep.DescriptorImpl.DEFAULT_NDEPEND_REPORT_PATH);
+        FilePath[] detailedXMLReport = workspace.list("**/" + DotCoverStep.DescriptorImpl.DEFAULT_DETAILED_REPORT_PATH);
         String reportContent = htmlReport[0].readToString();
 
         assertThat(snapshots.length, is(3));
         assertThat(htmlReport.length, is(1));
-        assertThat(nDependReport.length, is(0));
-        assertThat(detailedXMLReport.length, is(0));
+        assertThat(nDependReport.length, is(1));
+        assertThat(detailedXMLReport.length, is(1));
         assertThat(reportContent, containsString("iframe sandbox"));
     }
 

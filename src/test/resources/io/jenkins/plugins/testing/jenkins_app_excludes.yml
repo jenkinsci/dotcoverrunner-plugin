@@ -1,0 +1,14 @@
+unclassified:
+  dotCoverConfiguration:
+    mandatoryExcludedAssemblies: "*Another*"
+
+tool:
+  vstestinstallation:
+    installations:
+      - name: "DEFAULT"
+        home: 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe'
+
+  dotcoverinstallation:
+    installations:
+      - name: "Default"
+        home: 'C:\Program Files\DotCover\dotcover.exe'

@@ -59,21 +59,28 @@ public class DotCoverConfigurationBuilder {
         String snapshotPath = execution.toAgentPath(execution.tempDir.child(snapshotName));
         Element output = analyseParams.addElement("Output");
         output.addText(snapshotPath);
-
         Element filters = analyseParams.addElement("Filters");
+        Element processFilters = analyseParams.addElement("ProcessFilters");
 
         Element includeFilters = filters.addElement("IncludeFilters");
-
         Element excludeFilters = filters.addElement("ExcludeFilters");
 
-        Element processFilters = filters.addElement("ProcessFilters");
+        boolean isProcessIncludeSet = StringUtils.isNotBlank(step.getProcessInclude());
+        boolean isProcessExcludeSet = StringUtils.isNotBlank(step.getProcessExclude());
 
-        processFilter(processFilters.addElement("IncludeFilters"), step.getProcessInclude());
-        processFilter(processFilters.addElement("ExcludeFilters"), step.getProcessExclude());
+        if (isProcessIncludeSet || isProcessExcludeSet) {
 
-        if (StringUtils.isNotBlank(step.getCoverageInclude())) {
-            for (String assemblyName : step.getCoverageInclude().split(";")) {
-                if (!Strings.isNullOrEmpty(assemblyName)) {
+            if (isProcessIncludeSet) {
+                processFilter(processFilters.addElement("IncludeFilters"), step.getProcessInclude());
+            }
+            if (isProcessExcludeSet) {
+                processFilter(processFilters.addElement("ExcludeFilters"), step.getProcessExclude());
+            }
+        }
+
+        if (StringUtils.isNotBlank(step.getCoverageAssemblyInclude())) {
+            for (String assemblyName : step.getCoverageAssemblyInclude().split(";")) {
+                if (StringUtils.isNotBlank(assemblyName)) {
                     Element filterEntry = includeFilters.addElement("FilterEntry");
                     filterEntry.addElement("ModuleMask").addText(assemblyName);
                     filterEntry.addElement("ClassMask").addText("*");
@@ -84,7 +91,7 @@ public class DotCoverConfigurationBuilder {
 
         if (StringUtils.isNotBlank(step.getCoverageClassInclude())) {
             for (String className : step.getCoverageClassInclude().split(";")) {
-                if (!Strings.isNullOrEmpty(className)) {
+                if (StringUtils.isNotBlank(className)) {
                     Element filterEntry = includeFilters.addElement("FilterEntry");
                     filterEntry.addElement("ModuleMask").addText("*");
                     filterEntry.addElement("ClassMask").addText(className);
@@ -95,7 +102,7 @@ public class DotCoverConfigurationBuilder {
 
         if (StringUtils.isNotBlank(step.getCoverageFunctionInclude())) {
             for (String method : step.getCoverageFunctionInclude().split(";")) {
-                if (!Strings.isNullOrEmpty(method)) {
+                if (StringUtils.isNotBlank(method)) {
                     Element filterEntry = includeFilters.addElement("FilterEntry");
                     filterEntry.addElement("ModuleMask").addText("*");
                     filterEntry.addElement("ClassMask").addText("*");
@@ -104,8 +111,8 @@ public class DotCoverConfigurationBuilder {
             }
         }
 
-        if (StringUtils.isNotBlank(step.getCoverageExclude())) {
-            String mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
+        String mandatoryExcludedAssemblies = DotCoverConfiguration.getInstance().getMandatoryExcludedAssemblies();
+        if (StringUtils.isNotBlank(mandatoryExcludedAssemblies) || StringUtils.isNotBlank(step.getCoverageExclude())) {
             String stepExcludedAssemblies = step.getCoverageExclude();
             String excludedAssemblies = "";
             if (StringUtils.isNotBlank(stepExcludedAssemblies)) {
@@ -127,11 +134,10 @@ public class DotCoverConfigurationBuilder {
 
     private void processFilter(Element parentElement, String input) {
         if (Strings.isNullOrEmpty(input)) return;
-        for (String s : input.split(";")) {
-            if (!Strings.isNullOrEmpty(s)) {
-                parentElement.addElement("ProcessMask").addText(s);
+        for (String token : input.split(";")) {
+            if (StringUtils.isNotBlank(token)) {
+                parentElement.addElement("ProcessMask").addText(token);
             }
         }
     }
-
 }

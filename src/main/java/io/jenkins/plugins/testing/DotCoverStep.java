@@ -36,8 +36,8 @@ public class DotCoverStep extends Step implements Serializable {
     private String processExclude;
     private String outputDir = DescriptorImpl.DEFAULT_OUTPUT_DIR;
     private String htmlReportPath = DescriptorImpl.DEFAULT_HTML_REPORT_PATH;
-    private String nDependXmlReportPath = "";
-    private String detailedXMLReportPath = "";
+    private String nDependXmlReportPath = DescriptorImpl.DEFAULT_NDEPEND_REPORT_PATH;
+    private String detailedXMLReportPath = DescriptorImpl.DEFAULT_DETAILED_REPORT_PATH;
     private String snapsnotPath = "snapshot.cov";
 
     @DataBoundConstructor
@@ -85,12 +85,12 @@ public class DotCoverStep extends Step implements Serializable {
         this.vsTestArgs = Util.fixEmptyAndTrim(vsTestArgs);
     }
 
-    public String getCoverageInclude() {
+    public String getCoverageAssemblyInclude() {
         return coverageInclude;
     }
 
     @DataBoundSetter
-    public void setCoverageInclude(String coverageInclude) {
+    public void setCoverageAssemblyInclude(String coverageInclude) {
         this.coverageInclude = Util.fixEmptyAndTrim(coverageInclude);
     }
 
@@ -187,6 +187,8 @@ public class DotCoverStep extends Step implements Serializable {
         public static final String DEFAULT_TEST_PLATFORM = "x64";
         public static final String DEFAULT_OUTPUT_DIR = "coverage";
         public static final String DEFAULT_HTML_REPORT_PATH = "index.html";
+        public static final String DEFAULT_DETAILED_REPORT_PATH = "detailed-report.xml";
+        public static final String DEFAULT_NDEPEND_REPORT_PATH = "ndepend-report.xml";
 
         @Override
         @NonNull

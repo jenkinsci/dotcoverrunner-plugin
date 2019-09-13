@@ -1,25 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- This file has no bearing on the dotcover plugin java application. -->
-<!-- It is included as an example of the .xml config files produced for the dotcover cli tool. -->
-<!-- It is also useful for testing purposes as a reference of a valid configuration file -->
+<?xml version="1.0" encoding="UTF-8"?>
 <AnalyseParams>
     <TargetExecutable>C:\Program Files (x86)\Microsoft Visual
         Studio\2017\Professional\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe
     </TargetExecutable>
-    <TargetArguments>/platform:x64 /logger:trx "c:\Users\Rasmus
-        Jelsgaard\source\repos\TestAppForDotCover\UnitTestProject1\bin\Debug\UnitTestProject1.dll"
-    </TargetArguments>
+    <TargetArguments>/platform:x64 /logger:trx SomeTest.dll"</TargetArguments>
     <TargetWorkingDir>c:\tmp\DotCover</TargetWorkingDir>
     <TempDir>c:\tmp\DotCoverTemp\</TempDir>
     <Output>c:\tmp\DotCoverTemp\Snapshot.cov</Output>
     <Filters>
-        <IncludeFilters>
-            <FilterEntry>
-                <ModuleMask>*</ModuleMask>
-                <ClassMask>*</ClassMask>
-                <FunctionMask>*</FunctionMask>
-            </FilterEntry>
-        </IncludeFilters>
+        <IncludeFilters/>
         <ExcludeFilters>
             <FilterEntry>
                 <ModuleMask>*.Core</ModuleMask>

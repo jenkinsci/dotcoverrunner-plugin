@@ -84,7 +84,7 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
      * @param workspace The workspace to map
      * @return The node that the workspace is associated with.
      */
-    private static Node workspaceToNode(@Nonnull FilePath workspace) {
+    Node workspaceToNode(@Nonnull FilePath workspace) {
         Computer computer = workspace.toComputer();
         Node node = null;
         if (computer != null) node = computer.getNode();
@@ -106,9 +106,6 @@ public final class DotCoverStepExecution extends SynchronousNonBlockingStepExecu
     }
 
     private void createCoverageSnapshots(@Nonnull FilePath[] assemblies, @Nonnull PrintStream buildConsole) throws IOException, InterruptedException {
-        if (assemblies.length == 0) {
-            return;
-        }
         DotCoverConfigurationBuilder builder = new DotCoverConfigurationBuilder(this);
         for (FilePath assembly : assemblies) {
             Document config = builder.buildXmlDocument(assembly);
