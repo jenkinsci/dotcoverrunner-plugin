@@ -192,9 +192,10 @@
     </build>
 
     <scm>
-        <developerConnection>scm:git@github.com:rasmusjelsgaard/dotcoverrunner-plugin.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
+        <developerConnection>scm:git@github.com:jenkinsci/dotcoverrunner-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/dotcoverrunner-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <repositories>
         <repository>
