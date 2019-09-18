@@ -26,14 +26,14 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.47</version>
+        <version>3.50</version>
         <relativePath />
     </parent>
 
     <properties>
         <jenkins.version>2.176.1</jenkins.version>
         <java.level>8</java.level>
-        <workflow-step-api.version>2.20</workflow-step-api.version>
+        <configuration-as-code.version>1.30</configuration-as-code.version>
     </properties>
 
     <groupId>io.jenkins.plugins</groupId>
