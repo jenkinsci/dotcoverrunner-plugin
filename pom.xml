@@ -151,19 +151,6 @@
 
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <name>artifactorydk-releases</name>
-            <url>https://artifactorydk/maven-local</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>artifactorydk-snapshots</name>
-            <url>https://artifactorydk/maven-local</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
