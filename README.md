@@ -1,5 +1,4 @@
-# Threeshape.jenkins.dotcover
-
+# DotCover Runner Plugin
 Plugin that makes it easy to execute gather dotcover test coverage data.
 
 
