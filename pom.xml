@@ -8,6 +8,11 @@
         <developer>
             <name>Rasmus Wihlborg Jelsgaard</name>
             <email>jelsgaard@gmail.com</email>
+            <id>rasmusjelsgaard</id>
+        </developer>
+        <developer>
+            <name>Joseph Petersen</name>
+            <id>casz</id>
         </developer>
     </developers>
 
