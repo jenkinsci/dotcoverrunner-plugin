@@ -4,8 +4,6 @@
     <name>DotCover</name>
     <description>DotCover Runner Plugin</description>
 
-    <url>http://wiki.jenkins-ci.org/display/JENKINS/DotCover+Plugin</url>
-
     <developers>
         <developer>
             <name>Rasmus Wihlborg Jelsgaard</name>
@@ -33,7 +31,7 @@
         <workflow-step-api.version>2.20</workflow-step-api.version>
     </properties>
 
-    <groupId>io.jenkins.plugins.testing</groupId>
+    <groupId>io.jenkins.plugins</groupId>
     <artifactId>dotcover</artifactId>
     <version>1.0.7-SNAPSHOT</version>
     <packaging>hpi</packaging>
@@ -202,8 +200,8 @@
     </build>
 
     <scm>
-        <developerConnection>scm:git:git@git.3shape.local:jenkins/plugins/threeshape.jenkins.dotcover.git</developerConnection>
-      <tag>HEAD</tag>
+        <developerConnection>scm:git@github.com:rasmusjelsgaard/dotcoverrunner-plugin.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
 
     <repositories>
