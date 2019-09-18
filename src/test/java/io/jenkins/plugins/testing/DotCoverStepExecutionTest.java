@@ -20,6 +20,7 @@ import org.jvnet.hudson.test.BuildWatcher;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 public class DotCoverStepExecutionTest {
 
@@ -76,6 +77,7 @@ public class DotCoverStepExecutionTest {
     @Test
     @ConfiguredWithCode("jenkins_no_global_excludes.yml")
     public void foldersCreatedCorrectly() throws Exception {
+        assumeTrue(new File("c:/Program Files/dotcover/dotcover.exe").exists());
         final String pipeline = "pipeline {\n" +
                 "  agent {label 'test-agent'}\n" +
                 "\n" +
@@ -114,6 +116,7 @@ public class DotCoverStepExecutionTest {
     @Test
     @ConfiguredWithCode("jenkins_no_global_excludes.yml")
     public void runTestsAndDoCoverageForProjectOk() throws Exception {
+        assumeTrue(new File("c:/Program Files/dotcover/dotcover.exe").exists());
         WorkflowJob project = master.createProject(WorkflowJob.class);
         URL zipFile = getClass().getResource("TestAppForDotCover.zip");
         String zipFilePath = new File(zipFile.toURI()).getPath().replace("\\", "/");
