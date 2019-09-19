@@ -32,7 +32,7 @@
     </properties>
 
     <groupId>io.jenkins.plugins</groupId>
-    <artifactId>dotcover</artifactId>
+    <artifactId>dotcoverrunner</artifactId>
     <version>1.0.7-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
