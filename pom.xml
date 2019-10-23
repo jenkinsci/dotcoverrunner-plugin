@@ -176,14 +176,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Omitted because it complains about transient fields not being deserialzied properly which does is not an issue in Jenkins plugins -->
-                    <omitVisitors>SerializableIdiom</omitVisitors>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
