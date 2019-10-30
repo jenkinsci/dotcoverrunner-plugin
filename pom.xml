@@ -180,7 +180,8 @@
     </build>
 
     <scm>
-        <developerConnection>scm:git@github.com:jenkinsci/dotcoverrunner-plugin.git</developerConnection>
+        <connection>scm:git:git://github.com/jenkinsci/dotcoverrunner-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/dotcoverrunner-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/dotcoverrunner-plugin</url>
         <tag>HEAD</tag>
     </scm>
