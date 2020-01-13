@@ -142,12 +142,12 @@
                 <version>3.9</version>
                 <scope>test</scope>
             </dependency>
-            <dependencies>
+            <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-core</artifactId>
                 <version>2.2</version>
                 <scope>test</test>
-            </dependencies>
+            </dependency>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.176.x</artifactId>
