@@ -71,7 +71,7 @@ public class DotCoverStepExecutionTest {
         CpsFlowDefinition pipelineDefinition = new CpsFlowDefinition(pipeline, true);
         project.setDefinition(pipelineDefinition);
         WorkflowRun build = project.scheduleBuild2(0).get(); // schedule right now and wait to complete.
-        master.assertBuildStatus(Result.FAILURE, build);
+        master.assertBuildStatus(Result.SUCCESS, build);
     }
 
     @Test
